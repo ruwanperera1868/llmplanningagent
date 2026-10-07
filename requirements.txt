@@ -1,0 +1,9 @@
+# Runtime (versions are those the submission was tested with)
+langgraph==1.2.14
+pydantic==2.13.5
+pandas==3.0.6
+requests==2.34.2
+flask==3.1.3
+# Testing
+pytest==9.1.1
+pytest-cov==7.1.0

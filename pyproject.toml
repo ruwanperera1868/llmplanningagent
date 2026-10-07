@@ -1,0 +1,10 @@
+[project]
+name = "evidence-investigator"
+version = "1.0.0"
+description = "LLM-powered multi-agent Academic Evidence Investigator (MSc Intelligent Agents, Unit 11)"
+requires-python = ">=3.11"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
+markers = ["live: calls real APIs; skipped unless RUN_LIVE_TESTS=1"]
