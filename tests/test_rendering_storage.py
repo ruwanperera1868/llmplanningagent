@@ -37,3 +37,10 @@ def test_storage_round_trip_and_listing(tmp_path):
     assert loaded["briefing"] == b and loaded["papers"][0].relevance == 0.5 and loaded["audit"][0].agent == "a"
     assert storage.load_run(999) is None
     storage.close()
+
+
+def test_references_sorted_by_first_author_surname():
+    from evidence_investigator.rendering import by_first_author
+    ps = [make_paper("1", authors=["Zed Adams"]), make_paper("2", authors=["Amy Zhou"]),
+          make_paper("3", authors=["Bob Brown", ET_AL])]
+    assert [p.paper_id for p in by_first_author(ps)] == ["1", "3", "2"]

@@ -65,6 +65,14 @@ def reference(paper: Paper, accessed: date | None = None) -> str:
             f"(Accessed: {accessed.day} {accessed:%B %Y}).")
 
 
+def by_first_author(papers: list[Paper]) -> list[Paper]:
+    """Harvard reference lists are alphabetical by first author's surname."""
+    def key(p: Paper) -> tuple:
+        named = [a for a in p.authors if a != ET_AL]
+        return (surname(named[0]).lower() if named else p.title.lower(), p.year or 0)
+    return sorted(papers, key=key)
+
+
 def render_markdown(briefing: Briefing, papers: list[Paper], appraisals: dict[str, Appraisal],
                     verdict: CriticVerdict | None, audit: list[AuditEvent]) -> str:
     by_id = {p.paper_id: p for p in papers}
@@ -93,5 +101,5 @@ def render_markdown(briefing: Briefing, papers: list[Paper], appraisals: dict[st
     lines += ["", "## Audit trail", ""]
     lines += [f"- [cycle {e.cycle}] **{e.agent}** {e.action}: {e.detail}" for e in audit]
     lines += ["", "## References", ""]
-    lines += [reference(p) for p in sorted(papers, key=lambda p: (surname(p.authors[0]) if p.authors else p.title))]
+    lines += [reference(p) for p in by_first_author(papers)]
     return "\n".join(lines) + "\n"

@@ -153,9 +153,9 @@ SKIPPED [1] tests/test_live.py:25: set RUN_LIVE_TESTS=1
 SKIPPED [1] tests/test_live.py:30: HF_TOKEN not set
 SKIPPED [1] tests/test_live.py:36: set RUN_LIVE_TESTS=1
 ================== 70 passed, 4 skipped, 3 warnings in 3.11s ===================
-/home/claude/venv/lib/python3.13/site-packages/_pytest/unraisableexception.py:33: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7fbc1d965c60>
+_pytest/unraisableexception.py:33: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7fbc1d965c60>
   gc.collect()
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-/home/claude/venv/lib/python3.13/site-packages/_pytest/unraisableexception.py:33: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7fbc1d964c70>
+_pytest/unraisableexception.py:33: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7fbc1d964c70>
   gc.collect()
 ResourceWarning: Enable tracemalloc to get the object allocation traceback

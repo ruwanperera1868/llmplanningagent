@@ -41,6 +41,10 @@ def evidence_status(verdict: CriticVerdict | None, cycle: int, max_cycles: int) 
             f"unbalanced ({'; '.join(verdict.reasons)}). Treat conclusions as provisional.")
 
 
+def counts(counter: Counter) -> str:
+    return ", ".join(f"{k} {v}" for k, v in counter.most_common()) or "none"
+
+
 def deterministic_briefing(question: str, papers: list[Paper],
                            appraisals: dict[str, Appraisal]) -> Briefing:
     used = [(p, appraisals[p.paper_id]) for p in papers if p.paper_id in appraisals]
@@ -52,8 +56,8 @@ def deterministic_briefing(question: str, papers: list[Paper],
     missing = [d for d in ALL_DESIGNS if d not in designs]
     opportunities = ([f"No {d} studies were found among the retrieved papers." for d in missing[:3]]
                      or ["Retrieved designs are varied; check recency and context coverage."])
-    summary = (f"{len(used)} papers were appraised. Stances: {dict(stances)}. Study designs: "
-               f"{dict(designs)}. Findings below are the most question-relevant sentence of each "
+    summary = (f"{len(used)} papers were appraised. Stances: {counts(stances)}. Study designs: "
+               f"{counts(designs)}. Findings below are the most question-relevant sentence of each "
                "abstract, so read the sources before relying on them.")
     return Briefing(question=question, summary=summary, key_findings=findings or [
         KeyFinding(statement="No relevant evidence was retrieved.", paper_ids=["none"])],

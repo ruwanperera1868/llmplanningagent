@@ -1,0 +1,22 @@
+2026-10-07 18:31:02,676 INFO evidence_investigator.investigator: Run 2 started (offline; llm=none): Does retrieval reduce hallucination?
+[cycle 1] planner    plan               keyword plan (offline); queries: ['retrieval reduce hallucination', 'retrieval reduce hallucination systematic review', 'retrieval reduce hallucination empirical study']
+[cycle 1] retrieval  search             offline 'retrieval reduce hallucination' -> 2 records
+[cycle 1] retrieval  search             offline 'retrieval reduce hallucination systematic review' -> 2 records
+[cycle 1] retrieval  search             offline 'retrieval reduce hallucination empirical study' -> 2 records
+[cycle 1] processing dedupe-filter-rank received 6, removed 4 duplicates, 0 without abstract, 0 below relevance threshold; retained 2
+[cycle 1] critic     appraise           2 papers appraised (heuristic)
+[cycle 1] critic     verdict            insufficient: only 2 relevant papers (need 5); study designs not varied: {'experimental': 2}
+[cycle 2] planner    re-plan            used critic's suggested queries; queries: ['retrieval reduce hallucination evidence', 'retrieval reduce hallucination randomised controlled trial', 'retrieval reduce hallucination meta-analysis']
+[cycle 2] retrieval  search             offline 'retrieval reduce hallucination evidence' -> 2 records
+[cycle 2] retrieval  search             offline 'retrieval reduce hallucination randomised controlled trial' -> 0 records
+[cycle 2] retrieval  search             offline 'retrieval reduce hallucination meta-analysis' -> 2 records
+[cycle 2] processing dedupe-filter-rank received 10, removed 8 duplicates, 0 without abstract, 0 below relevance threshold; retained 2
+[cycle 2] critic     verdict            insufficient: only 2 relevant papers (need 5); study designs not varied: {'experimental': 2}
+[cycle 3] planner    re-plan            used critic's suggested queries; queries: ['retrieval reduce']
+[cycle 3] retrieval  search             offline 'retrieval reduce' -> 3 records
+[cycle 3] processing dedupe-filter-rank received 13, removed 10 duplicates, 0 without abstract, 0 below relevance threshold; retained 3
+[cycle 3] critic     appraise           1 papers appraised (heuristic)
+[cycle 3] critic     verdict            insufficient: only 3 relevant papers (need 5); study designs not varied: {'experimental': 2, 'other': 1}
+[cycle 3] reporter   report             deterministic briefing
+[cycle 3] reporter   store              saved run 2 to SQLite
+Briefing written to evidence/briefing-offline-max-cycles.md (run 2)

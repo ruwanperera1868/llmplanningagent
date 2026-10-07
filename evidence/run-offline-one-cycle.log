@@ -1,0 +1,11 @@
+2026-10-07 18:31:00,683 INFO evidence_investigator.investigator: Run 1 started (offline; llm=none): How do LLM-based agents plan, act and reflect?
+[cycle 1] planner    plan               keyword plan (offline); queries: ['llm agents plan act reflect', 'llm agents plan act reflect systematic review', 'llm agents plan act reflect empirical study']
+[cycle 1] retrieval  search             offline 'llm agents plan act reflect' -> 10 records
+[cycle 1] retrieval  search             offline 'llm agents plan act reflect systematic review' -> 5 records
+[cycle 1] retrieval  search             offline 'llm agents plan act reflect empirical study' -> 5 records
+[cycle 1] processing dedupe-filter-rank received 20, removed 10 duplicates, 0 without abstract, 0 below relevance threshold; retained 10
+[cycle 1] critic     appraise           10 papers appraised (heuristic)
+[cycle 1] critic     verdict            sufficient: 10 relevant papers across 4 designs with stances {'neutral': 6, 'supports': 2, 'opposes': 1, 'mixed': 1}
+[cycle 1] reporter   report             deterministic briefing
+[cycle 1] reporter   store              saved run 1 to SQLite
+Briefing written to evidence/briefing-offline-one-cycle.md (run 1)

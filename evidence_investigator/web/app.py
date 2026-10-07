@@ -16,7 +16,7 @@ from flask import Flask, abort, jsonify, redirect, render_template, request, url
 
 from ..config import Settings
 from ..investigator import Investigator
-from ..rendering import in_text, reference
+from ..rendering import by_first_author, in_text, reference
 from ..storage import Storage
 
 
@@ -34,7 +34,7 @@ def create_app(settings: Settings | None = None, investigator_factory=None,
                                      storage=storage))
 
     app = Flask(__name__)
-    app.jinja_env.globals.update(in_text=in_text, reference=reference)
+    app.jinja_env.globals.update(in_text=in_text, reference=reference, by_first_author=by_first_author)
 
     @app.get("/")
     def index():

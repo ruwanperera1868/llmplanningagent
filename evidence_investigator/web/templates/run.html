@@ -35,5 +35,5 @@
 {% endfor %}</ol></details>
 
 <h2>References</h2>
-<ul class="refs">{% for p in papers|sort(attribute="title") %}<li>{{ reference(p) }}</li>{% endfor %}</ul>
+<ul class="refs">{% for p in by_first_author(papers) %}<li>{{ reference(p) }}</li>{% endfor %}</ul>
 {% endblock %}
