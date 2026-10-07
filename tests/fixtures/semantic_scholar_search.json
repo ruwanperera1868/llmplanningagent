@@ -1,0 +1,20 @@
+{
+  "total": 4, "offset": 0,
+  "data": [
+    {"paperId": "s2aaa111", "title": "Example Study A: Generative AI Tutoring and Exam Scores",
+     "authors": [{"name": "Alex Example"}, {"name": "Sam Placeholder"}], "year": 2024,
+     "abstract": "We ran a randomised controlled trial with 300 undergraduates. Students using a generative AI tutor scored significantly higher on final exams.",
+     "url": "https://www.semanticscholar.org/paper/s2aaa111", "venue": "Journal of Example Education",
+     "externalIds": {"DOI": "10.9999/EXAMPLE.A"}},
+    {"paperId": "s2bbb222", "title": "Example Study B: Student Perceptions of Chatbots",
+     "authors": [{"name": "Jo Sample"}], "year": 2023, "abstract": null,
+     "url": "https://www.semanticscholar.org/paper/s2bbb222", "venue": "", "externalIds": {}},
+    {"paperId": "s2ccc333", "title": "Example Study C: No Effect of AI Writing Assistants on Grades",
+     "authors": [{"name": "Lee Dummy"}, {"name": "Kim Mock"}, {"name": "Pat Fixture"}, {"name": "Ash Stub"}],
+     "year": 2025,
+     "abstract": "A survey of 1,200 university students found no significant difference in grades between AI users and non-users. Self-reported data is a limitation.",
+     "url": "https://www.semanticscholar.org/paper/s2ccc333", "venue": "Example Review of Learning",
+     "externalIds": {"ArXiv": "2501.00000"}},
+    {"paperId": "s2ddd444", "title": "", "authors": [], "year": null, "abstract": "No title", "url": null, "externalIds": null}
+  ]
+}

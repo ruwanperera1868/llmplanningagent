@@ -1,0 +1,20 @@
+{
+  "status": "ok", "message-type": "work-list",
+  "message": {"total-results": 3, "items": [
+    {"DOI": "10.9999/example.a", "type": "journal-article",
+     "title": ["Example Study A: Generative AI Tutoring and Exam Scores"],
+     "author": [{"given": "Alex", "family": "Example"}, {"given": "Sam", "family": "Placeholder"}],
+     "issued": {"date-parts": [[2024, 3, 1]]},
+     "abstract": "<jats:title>Abstract</jats:title><jats:p>We ran a randomised controlled trial with 300 undergraduates.</jats:p>",
+     "URL": "http://dx.doi.org/10.9999/example.a", "container-title": ["Journal of Example Education"]},
+    {"DOI": "10.9999/example.d", "type": "journal-article",
+     "title": ["Example Study D: Interviews with Lecturers on Generative AI"],
+     "author": [{"given": "Robin", "family": "Template"}],
+     "issued": {"date-parts": [[2025]]},
+     "abstract": "<jats:p>Thematic analysis of interviews with 20 lecturers raised concerns about academic integrity.</jats:p>",
+     "URL": "http://dx.doi.org/10.9999/example.d", "container-title": ["Example Teaching Quarterly"]},
+    {"DOI": "10.9999/example.review", "type": "peer-review",
+     "title": ["Review of: Example Study A"], "author": [], "issued": {"date-parts": [[2024]]},
+     "abstract": "<jats:p>Reviewer comments.</jats:p>", "URL": "http://dx.doi.org/10.9999/example.review"}
+  ]}
+}
