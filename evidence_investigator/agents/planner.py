@@ -6,7 +6,8 @@ revise the strategy using the Critic's feedback. This is the agent that holds
 the *intention* in the BDI sense and revises it when beliefs change
 (Archibald et al., 2024; Wooldridge, 2009).
 
-The LLM proposes a plan, but Python validates it (schema, query length,
+Planning by task decomposition is one of the core capabilities of LLM-based
+agents identified by Wang et al. (2024). The LLM proposes a plan, but Python validates it (schema, query length,
 de-duplication against queries already tried). If the LLM is unavailable or
 returns an invalid plan, a transparent keyword-based planner is used, so the
 agent stays autonomous without a model.

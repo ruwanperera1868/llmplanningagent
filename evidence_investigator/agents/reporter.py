@@ -8,6 +8,9 @@ Grounding rules (the proposal's main hallucination mitigation, section 6):
   so the system cannot overstate how complete its evidence is.
 
 Retrieval-grounded generation of this kind follows Lewis et al. (2020).
+Grounding is not a guarantee: retrieval-augmented systems still fail when the
+retrieved evidence is incomplete or misleading (Huang et al., 2025), which is
+why the evidence status is reported alongside every briefing.
 """
 
 from __future__ import annotations

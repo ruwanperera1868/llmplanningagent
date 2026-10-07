@@ -5,7 +5,9 @@ planner or reporter) and a bounded loop. LangGraph makes each of those an
 explicit, inspectable part of the graph rather than control flow hidden inside
 prompts, which is why it was preferred over CrewAI in the proposal. The
 structure is LangGraph's evaluator-optimiser pattern (LangChain, no date):
-the Critic evaluates and the Planner optimises the search.
+the Critic evaluates and the Planner optimises the search. Alternating
+reasoning nodes (planner, critic) with acting nodes (retrieval) is the ReAct
+pattern of interleaving reasoning with external actions (Yao et al., 2023).
 
 The loop is bounded twice: ``route_after_critic`` stops at ``max_cycles``,
 and LangGraph's ``recursion_limit`` is a hard backstop in case of a bug.
