@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Briefing {{ run.id }}{% endblock %}
+{% block content %}
+{% set by_id = {} %}{% for p in papers %}{% set _ = by_id.update({p.paper_id: p}) %}{% endfor %}
+<h1>Research briefing</h1>
+<p class="question">{{ briefing.question }}</p>
+<p class="status">{{ briefing.evidence_status }}</p>
+<p class="meta">Run {{ run.id }} · {{ run.mode }} · report: {{ briefing.generated_by }} ·
+  <a href="{{ url_for('run_json', run_id=run.id) }}">JSON</a></p>
+
+<h2>Summary</h2><p>{{ briefing.summary }}</p>
+<h2>Key findings</h2>
+<ul>{% for k in briefing.key_findings %}
+  <li>{{ k.statement }} <span class="cite">({% for i in k.paper_ids if i in by_id %}{{ in_text(by_id[i]) }}{% if not loop.last %}; {% endif %}{% endfor %})</span></li>
+{% endfor %}</ul>
+{% for heading, items in [("Conflicting or inconclusive evidence", briefing.conflicting_evidence),
+                          ("Limitations", briefing.limitations),
+                          ("Possible research opportunities (within retrieved evidence only)", briefing.research_opportunities)] %}
+<h2>{{ heading }}</h2>
+<ul>{% for i in items %}<li>{{ i }}</li>{% else %}<li>None identified.</li>{% endfor %}</ul>
+{% endfor %}
+
+<h2>Evidence table</h2>
+<table>
+  <thead><tr><th>Source</th><th>Title</th><th>Design</th><th>Stance</th><th>Relevance</th></tr></thead>
+  <tbody>{% for p in papers %}{% set a = appraisals.get(p.paper_id) %}
+    <tr><td>{{ in_text(p) }}</td><td><a href="{{ p.url }}" rel="noopener noreferrer">{{ p.title }}</a></td>
+      <td>{{ a.study_design if a else "" }}</td><td>{{ a.stance if a else "" }}</td><td>{{ "%.2f"|format(p.relevance) }}</td></tr>
+  {% endfor %}</tbody>
+</table>
+
+<details><summary>Audit trail ({{ audit|length }} events)</summary>
+<ol class="audit">{% for e in audit %}
+  <li><b>cycle {{ e.cycle }} · {{ e.agent }}</b> {{ e.action }}: {{ e.detail }}</li>
+{% endfor %}</ol></details>
+
+<h2>References</h2>
+<ul class="refs">{% for p in papers|sort(attribute="title") %}<li>{{ reference(p) }}</li>{% endfor %}</ul>
+{% endblock %}

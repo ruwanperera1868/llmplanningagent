@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Ask a research question</h1>
+<form method="post" action="{{ url_for('investigate') }}" class="ask">
+  <label for="question">Research question</label>
+  <textarea id="question" name="question" rows="3" maxlength="300" required
+    placeholder="Does generative AI improve university students' academic performance?">{{ question }}</textarea>
+  <label class="check"><input type="checkbox" name="offline" {% if offline %}checked{% endif %}>
+    Offline demo mode (bundled corpus, no LLM)</label>
+  {% if error %}<p class="error" role="alert">{{ error }}</p>{% endif %}
+  <button type="submit">Investigate</button>
+  <p class="hint">Live runs search Semantic Scholar and Crossref and can take a minute or two.</p>
+</form>
+<h2>Previous runs</h2>
+{% if runs %}
+<table>
+  <thead><tr><th>#</th><th>Question</th><th>Mode</th><th>Started (UTC)</th></tr></thead>
+  <tbody>
+  {% for r in runs %}
+    <tr><td>{{ r.id }}</td>
+      <td>{% if r.finished_at %}<a href="{{ url_for('show_run', run_id=r.id) }}">{{ r.question }}</a>{% else %}{{ r.question }} (incomplete){% endif %}</td>
+      <td>{{ r.mode }}</td><td>{{ r.started_at }}</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% else %}<p>No runs yet.</p>{% endif %}
+{% endblock %}
