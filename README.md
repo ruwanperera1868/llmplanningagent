@@ -142,6 +142,7 @@ evidence_investigator/
 tests/               unit, functional, interface and live tests, synthetic fixtures
 evidence/            execution logs, briefings, test reports, screenshots
 docs/TESTING.md      test strategy, results, remediation log
+presentation/        10-slide deck (.pptx and .pdf) and narration transcript
 ```
 
 ## 8. Legal, social, ethical and professional considerations
