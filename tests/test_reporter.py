@@ -65,3 +65,4 @@ def test_reporter_saves_to_storage():
     assert out["audit"][-1].action == "store"
     saved = storage.load_run(run_id)
     assert saved["briefing"] == out["briefing"] and len(saved["papers"]) == 2
+    storage.close()

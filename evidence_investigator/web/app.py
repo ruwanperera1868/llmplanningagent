@@ -20,9 +20,13 @@ from ..rendering import in_text, reference
 from ..storage import Storage
 
 
-def create_app(settings: Settings | None = None, investigator_factory=None) -> Flask:
+def create_app(settings: Settings | None = None, investigator_factory=None,
+               storage: Storage | None = None) -> Flask:
     settings = settings or Settings.from_env()
-    storage = Storage(settings.db_path)
+    # One shared connection for the app's lifetime. Remediation R3: creating a
+    # second Storage here as well as in the caller leaked SQLite connections
+    # (ResourceWarning in the test report).
+    storage = storage or Storage(settings.db_path)
     # A factory (rather than one shared Investigator) lets the offline toggle
     # on the form choose the configuration per request, and lets tests inject fakes.
     factory = investigator_factory or (

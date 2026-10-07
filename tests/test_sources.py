@@ -1,9 +1,10 @@
 import pytest
+import requests
 
 from conftest import load_fixture
 from evidence_investigator.sources import (CrossrefSource, OfflineSource, RateLimiter,
                                            SemanticScholarSource, SourceError)
-from evidence_investigator.sources import crossref, semantic_scholar
+from evidence_investigator.sources import base, crossref, semantic_scholar
 
 
 class NoWait(RateLimiter):
@@ -62,3 +63,30 @@ def test_offline_source_ranks_and_thresholds():
     assert hits[0].title.startswith("Reflexion")
     assert source.search("marine biology coral reefs", 5) == []
     assert hits[0].authors[-1] == "et al."  # abbreviated author lists are marked
+
+
+class FakeHTTP:
+    def __init__(self, statuses):
+        self.statuses, self.calls = list(statuses), 0
+
+    def __call__(self, url, params, timeout, headers):
+        self.calls += 1
+        status = self.statuses.pop(0)
+        if status == "timeout":
+            raise requests.Timeout("slow")
+        resp = requests.Response()
+        resp.status_code, resp._content = status, b'{"ok": true}'
+        return resp
+
+
+@pytest.mark.parametrize("statuses,ok", [([200], True), ([429, 200], True), (["timeout", 503, 200], True),
+                                         ([429, 429, 429], False), ([404], False)])
+def test_http_json_retries_transient_errors(monkeypatch, statuses, ok):
+    fake = FakeHTTP(statuses)
+    monkeypatch.setattr(base.requests, "get", fake)
+    monkeypatch.setattr(base.time, "sleep", lambda s: None)
+    if ok:
+        assert base.http_json("https://x", {}) == {"ok": True}
+    else:
+        with pytest.raises(SourceError):
+            base.http_json("https://x", {})

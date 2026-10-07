@@ -14,6 +14,7 @@ USER_AGENT = "AcademicEvidenceInvestigator/1.0 (MSc coursework prototype)"
 # A fetcher takes a URL and query parameters and returns decoded JSON. Sources
 # receive one by injection so unit tests can replay recorded API responses.
 Fetcher = Callable[[str, dict], dict]
+TRANSIENT = {429, 500, 502, 503, 504}
 
 
 class SourceError(RuntimeError):
@@ -49,18 +50,29 @@ class RateLimiter:
 
 
 def http_json(url: str, params: dict, timeout: float = 20.0, retries: int = 2) -> dict:
-    """GET JSON with a short back-off on 429/5xx, which free tiers return often."""
+    """GET JSON, backing off and retrying only on transient failures.
+
+    429 and 5xx responses and network timeouts are retried, because free tiers
+    return them often. Other 4xx errors are permanent (a bad request will not
+    improve), so they fail at once. Remediation R4: the first version retried
+    every error, including 404s, which wasted the shared rate limit.
+    """
     for attempt in range(retries + 1):
         try:
             resp = requests.get(url, params=params, timeout=timeout,
                                 headers={"User-Agent": USER_AGENT})
-            if resp.status_code in (429, 500, 502, 503) and attempt < retries:
-                time.sleep(2 ** (attempt + 1))
-                continue
-            resp.raise_for_status()
-            return resp.json()
-        except (requests.RequestException, ValueError) as exc:
+        except requests.RequestException as exc:
             if attempt == retries:
                 raise SourceError(f"{url} failed: {exc}") from exc
             time.sleep(2 ** (attempt + 1))
-    raise SourceError(f"{url} failed after retries")
+            continue
+        if resp.status_code in TRANSIENT and attempt < retries:
+            time.sleep(2 ** (attempt + 1))
+            continue
+        if resp.status_code >= 400:
+            raise SourceError(f"{url} returned HTTP {resp.status_code}")
+        try:
+            return resp.json()
+        except ValueError as exc:
+            raise SourceError(f"{url} returned invalid JSON") from exc
+    raise SourceError(f"{url} failed after {retries + 1} attempts")

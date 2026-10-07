@@ -106,3 +106,9 @@ class Storage:
 
     def close(self) -> None:
         self._conn.close()
+
+    def __enter__(self) -> "Storage":
+        return self
+
+    def __exit__(self, *exc) -> None:
+        self.close()

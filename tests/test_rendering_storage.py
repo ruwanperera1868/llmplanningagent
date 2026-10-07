@@ -36,3 +36,4 @@ def test_storage_round_trip_and_listing(tmp_path):
     loaded = storage.load_run(run_id)
     assert loaded["briefing"] == b and loaded["papers"][0].relevance == 0.5 and loaded["audit"][0].agent == "a"
     assert storage.load_run(999) is None
+    storage.close()

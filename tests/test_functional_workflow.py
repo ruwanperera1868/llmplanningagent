@@ -34,15 +34,16 @@ def run(settings, sources, llm=None, storage=None):
 def test_offline_end_to_end_produces_grounded_briefing(tmp_path):
     """Goal in, plan, retrieve, process, critique, report and store: the core autonomous loop."""
     settings = Settings(db_path=tmp_path / "db", offline=True)
-    storage = Storage(settings.db_path)
-    result = Investigator(settings, storage=storage).run("How do LLM-based agents plan, act and reflect?")
+    with Storage(settings.db_path) as storage:
+        result = Investigator(settings, storage=storage).run("How do LLM-based agents plan, act and reflect?")
+        saved = storage.load_run(result.run_id)
     agents = [e.agent for e in result.audit]
     assert agents[0] == "planner" and "retrieval" in agents and "critic" in agents
     assert agents[-2:] == ["reporter", "reporter"]
     ids = {p.paper_id for p in result.papers}
     assert all(set(k.paper_ids) <= ids for k in result.briefing.key_findings)
     assert "## References" in result.markdown and "Accessed:" in result.markdown
-    assert storage.load_run(result.run_id)["briefing"] == result.briefing
+    assert saved["briefing"] == result.briefing
 
 
 def test_critic_triggers_replan_when_first_search_is_weak(settings):
