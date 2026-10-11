@@ -43,6 +43,21 @@ Final run (`evidence/test-report.txt`): **83 passed, 4 skipped (live), 0 failed;
 
 Lines not covered are mainly `__main__.py` (exercised through the CLI tests by calling `main()` directly) and the network branch of `http_json` that sleeps between real retries.
 
+### Live test run
+
+`RUN_LIVE_TESTS=1 python -m pytest tests/test_live.py` on Windows 11 with Qwen2.5-7B under Ollama and `LLM_JSON_MODE=1` (`evidence/live-tests.txt`): **3 passed, 1 failed, in 8 min 43 s.**
+
+| Test | Result |
+|---|---|
+| `test_crossref_live` | Passed: the Crossref parser still matches the real API |
+| `test_llm_live` | Passed: the configured endpoint returned valid JSON |
+| `test_full_live_run` | Passed: a complete live investigation produced a grounded briefing |
+| `test_semantic_scholar_live` | Failed: Semantic Scholar answered HTTP 429 to all five attempts |
+
+The failure is outside the code: the unauthenticated Semantic Scholar pool was throttled, and the client correctly retried with back-off (R7) before giving up. The test is left as it is rather than skipped on 429, because it exists to show whether that source is reachable. In the full run the same throttling was absorbed by the design: retrieval continued with Crossref and the run completed. A Semantic Scholar API key (`SEMANTIC_SCHOLAR_API_KEY`) is the remedy.
+
+The briefing from the same session (`evidence/briefing-live.md`) was written entirely by the LLM ("llm reporting; appraisals by llm"), which confirms R9: with JSON mode on, the Reporter no longer fell back after malformed JSON.
+
 ## Remediation log
 
 Issues found during development and testing, in the order they were found.
@@ -63,6 +78,6 @@ One failure was in the test, not the code: an early processing test used two fix
 
 ## Known limitations of the testing
 
-- The live tests depend on network access and on third-party services whose availability changes (see R6 and R7); their output from the Windows run is in `evidence/`.
+- The live tests depend on network access and on third-party services whose availability changes (see R6 and R7). In the Windows run Semantic Scholar's rate limit failed one of the four; the output is in `evidence/live-tests.txt`.
 - The LLM path is tested with a scripted model. How reliably Qwen2.5-7B follows the JSON schemas is checked only by live runs, which found the problems fixed in R8 and R9; every LLM failure falls back to the deterministic path, and the audit trail records when that happens.
 - The heuristic appraisal lexicon is tested on short, hand-written abstracts, not against a labelled benchmark.

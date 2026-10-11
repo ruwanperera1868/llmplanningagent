@@ -135,6 +135,8 @@ The test strategy, results (96% line coverage) and the **remediation log** of th
 | `evidence/screenshots/01`–`06` | Offline demo in the Flask interface: form, briefing, audit trail, cycle-limit briefing, validation error, run history |
 | `evidence/screenshots/07-live-cli-qwen-local.png` | **Live run** on Windows: real Semantic Scholar and Crossref results, with the Planner, Critic and Reporter all using Qwen2.5-7B under Ollama |
 | `evidence/screenshots/08`–`12` | **Live run** in the Flask interface: run history, briefing, findings, evidence table, and an audit trail showing per-item validation (R8) and the Reporter's fallback after malformed JSON (R9) |
+| `evidence/briefing-live.md` | A live briefing written entirely by Qwen2.5-7B with JSON mode on (R9 confirmed) |
+| `evidence/live-tests.txt` | The opt-in live tests: 3 passed; Semantic Scholar's rate limit (HTTP 429) failed the fourth |
 
 **Live runs (11 October 2026, Windows 11, Python 3.13, Ollama with `qwen2.5:7b`).** Each run took about 5 to 10 minutes on a CPU. They exposed the issues logged as R6 to R9 in `docs/TESTING.md`; every one was handled by a fallback, so no run failed outright.
 
