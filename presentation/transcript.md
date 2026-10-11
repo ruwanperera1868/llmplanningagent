@@ -2,7 +2,7 @@
 
 Academic Evidence Investigator: Unit 11 individual presentation, Ruwan Perera
 
-About 1242 words, roughly 9 minutes at a natural speaking pace.
+About 1285 words, roughly 9 minutes at a natural speaking pace.
 
 ## Slide 1: Academic Evidence Investigator
 
@@ -30,7 +30,7 @@ Here is the Flask interface after a live run on my own computer, asking the ques
 
 ## Slide 7: Demonstration: the Critic drives re-planning
 
-This log shows the autonomous loop. For the question "Does retrieval reduce hallucination?" the first cycle retrieves only two relevant papers, both experimental. The Critic judges this insufficient and unbalanced, and suggests targeted searches. The Planner re-plans with queries for randomised controlled trials and meta-analyses. When that still finds little, it broadens the query in the third cycle. At the cycle limit the Reporter writes the briefing anyway, but labels it provisional and says why. By contrast, a question about how LLM agents plan, act and reflect was judged sufficient and balanced after one cycle. So the agent's behaviour depends on what it finds, not on a fixed script.
+This is the code that makes the system an agent rather than a fixed pipeline. After every cycle, LangGraph calls route_after_critic. If the Critic's verdict is sufficient, or the cycle limit is reached, the graph goes to the Reporter; otherwise it loops back to the Planner. The comment explains why: the stop decision is a rule, not the model judging its own work, because self-reflection reduces but does not remove hallucination (Ji et al., 2023). Below is what that code did in an offline run of "Does retrieval reduce hallucination?". The Critic found only two relevant papers, so the Planner re-planned with queries for trials and meta-analyses, then broadened the search. At the cycle limit the Reporter wrote the briefing anyway, but labelled it provisional. By contrast, the live generative AI question was judged sufficient after one cycle. So the agent's behaviour depends on what it finds, not on a fixed script.
 
 ## Slide 8: Testing: 83 tests, no network needed
 

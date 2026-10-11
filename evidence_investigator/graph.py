@@ -37,6 +37,8 @@ def make_processing_node(min_relevance: float, limit: int):
 
 def make_router(max_cycles: int):
     def route_after_critic(state: ResearchState) -> str:
+        # The stop decision is a rule, not the model's opinion of its own work:
+        # self-reflection reduces but does not remove hallucination (Ji et al., 2023).
         verdict = state["verdict"]
         if verdict.sufficient or state["cycle"] >= max_cycles:
             return "report"
