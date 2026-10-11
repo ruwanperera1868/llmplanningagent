@@ -107,3 +107,13 @@ def test_default_llm_uses_configured_endpoint():
     local = default_llm(Settings(llm_base_url="http://localhost:11434/v1", hf_model="qwen2.5:7b"))
     assert local.url == "http://localhost:11434/v1/chat/completions"
     assert default_llm(Settings(hf_token="t", offline=True)) is None
+
+
+def test_json_mode_is_opt_in():
+    # Remediation R9: constrained JSON decoding for servers that support it.
+    reply = FakeResponse(payload={"choices": [{"message": {"content": "{}"}}]})
+    off, on = FakeSession(reply), FakeSession(reply)
+    ChatCompletionsClient("t", "m", session=off).complete("s", "p")
+    ChatCompletionsClient("t", "m", session=on, json_mode=True).complete("s", "p")
+    assert "response_format" not in off.sent[2]
+    assert on.sent[2]["response_format"] == {"type": "json_object"}

@@ -30,6 +30,7 @@ class Settings:
     # A local model on a laptop CPU can take minutes per call, so the timeout
     # is a setting rather than a constant.
     llm_timeout: int = 90
+    llm_json_mode: bool = False
     crossref_mailto: str = ""
     semantic_scholar_api_key: str = ""
     db_path: Path = Path("data/investigator.db")
@@ -60,6 +61,7 @@ class Settings:
             hf_model=os.environ.get("HF_MODEL", cls.hf_model),
             llm_base_url=os.environ.get("LLM_BASE_URL", "").strip() or cls.llm_base_url,
             llm_timeout=_int("LLM_TIMEOUT", cls.llm_timeout),
+            llm_json_mode=os.environ.get("LLM_JSON_MODE", "") == "1",
             crossref_mailto=os.environ.get("CROSSREF_MAILTO", "").strip(),
             semantic_scholar_api_key=os.environ.get("SEMANTIC_SCHOLAR_API_KEY", "").strip(),
             db_path=Path(os.environ.get("INVESTIGATOR_DB", cls.db_path)),

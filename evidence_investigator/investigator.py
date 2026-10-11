@@ -62,7 +62,8 @@ def default_llm(settings: Settings) -> LLMClient | None:
     if not settings.hf_token and settings.llm_base_url.rstrip("/") == HF_BASE_URL:
         return None
     return ChatCompletionsClient(settings.hf_token, settings.hf_model,
-                                 settings.llm_base_url, settings.llm_timeout)
+                                 settings.llm_base_url, settings.llm_timeout,
+                                 json_mode=settings.llm_json_mode)
 
 
 class Investigator:

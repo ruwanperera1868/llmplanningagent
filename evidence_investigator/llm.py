@@ -45,7 +45,7 @@ class LLMClient(Protocol):
 
 class ChatCompletionsClient:
     def __init__(self, token: str, model: str, base_url: str = HF_BASE_URL,
-                 timeout: float = 90.0, session=None):
+                 timeout: float = 90.0, session=None, json_mode: bool = False):
         base_url = base_url.rstrip("/")
         # A hosted router always needs a token; a local server such as Ollama
         # does not, so the check applies only to the Hugging Face default.
@@ -55,6 +55,7 @@ class ChatCompletionsClient:
         self.model = model
         self.url = f"{base_url}/chat/completions"
         self.timeout = timeout
+        self.json_mode = json_mode
         self._session = session or requests.Session()
         host = "huggingface" if base_url == HF_BASE_URL else urlparse(base_url).hostname
         self.name = f"{host}:{model}"
@@ -75,6 +76,12 @@ class ChatCompletionsClient:
                     # Low temperature favours consistent, schema-following
                     # output over creativity and makes runs more repeatable.
                     "temperature": 0.2,
+                    # Remediation R9: Qwen2.5-7B once returned a briefing with a
+                    # missing comma, so the Reporter fell back. JSON mode makes
+                    # servers that support it (Ollama does) constrain decoding
+                    # to valid JSON. Opt-in, because not every hosted provider
+                    # accepts the parameter. Schema checks still run afterwards.
+                    **({"response_format": {"type": "json_object"}} if self.json_mode else {}),
                 },
                 timeout=self.timeout,
             )

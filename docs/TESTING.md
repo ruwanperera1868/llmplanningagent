@@ -25,14 +25,14 @@ RUN_LIVE_TESTS=1 python -m pytest tests/test_live.py -v
 
 ## Results
 
-Final run (`evidence/test-report.txt`): **82 passed, 4 skipped (live), 0 failed; 96% line coverage.**
+Final run (`evidence/test-report.txt`): **83 passed, 4 skipped (live), 0 failed; 96% line coverage.**
 
 | File | Tests |
 |---|---|
 | test_critic.py | 15 |
 | test_functional_workflow.py | 11 |
 | test_sources.py | 13 |
-| test_llm.py | 12 |
+| test_llm.py | 13 |
 | test_planner.py | 6 |
 | test_reporter.py | 6 |
 | test_interfaces.py | 5 |
@@ -57,11 +57,12 @@ Issues found during development and testing, in the order they were found.
 | R6 | First live run on Windows | Every LLM call failed and the agents fell back to their heuristics. The log said only "400 Bad Request". Calling the router directly showed `model_not_supported`: no provider served Qwen2.5-7B-Instruct any more, and the free account's credit for larger models was used up (HTTP 402). | `llm.py` now keeps the provider's error message in the `LLMError`, and the endpoint is configurable (`LLM_BASE_URL`, `LLM_TIMEOUT`). The same client reaches the Hugging Face router, a hosted alternative, or Qwen2.5-7B running locally under Ollama, which needs no token. The graceful fallback worked as designed: the run still produced a briefing and the audit trail recorded each failure. | `test_provider_error_message_is_kept`, `test_local_endpoint_needs_no_token_and_sends_no_auth_header`, `test_default_llm_uses_configured_endpoint` |
 | R7 | Same live run | Semantic Scholar answered every query with HTTP 429 (its shared unauthenticated pool was throttled), so only Crossref contributed papers. Two short retries were not enough. | `http_json` now retries up to four times with doubling back-off (2 to 16 s), honours `Retry-After` (capped at 30 s), and an optional `SEMANTIC_SCHOLAR_API_KEY` moves requests to a dedicated rate limit. Retrieval still continues with the other source if one fails, as before. | `test_backoff_honours_retry_after_and_is_capped`, `test_semantic_scholar_sends_api_key_only_when_set`, `test_http_json_retries_transient_errors` |
 | R8 | First live run with Qwen2.5-7B under Ollama | The Planner and Reporter used the LLM successfully, but the Critic logged `heuristic after LLM failure: ValidationError`: the batch of 12 appraisals was validated all-or-nothing, so one malformed item discarded the rest. | `coerce_appraisal` validates each item separately, maps common label synonyms (e.g. "systematic review" to review, "positive" to supports), trims over-long text and rejects only unusable items, which fall back to the heuristic individually. The audit trail reports how many were appraised by heuristic. | `test_llm_labels_are_normalised_item_by_item` |
+| R9 | Live run in the Flask interface (`evidence/screenshots/12-live-web-audit-trail.png`) | Qwen2.5-7B returned a briefing with a missing comma (`invalid JSON ... line 31 column 36`), so the Reporter used its deterministic fallback. The same run showed R8 working: 11 of 12 appraisals were accepted from the LLM and 1 was done by heuristic. | Optional JSON mode (`LLM_JSON_MODE=1`) sends `response_format: json_object`, which Ollama uses to constrain decoding to valid JSON. It is opt-in because not every hosted provider accepts it. Schema validation and citation grounding still run afterwards. | `test_json_mode_is_opt_in` |
 
 One failure was in the test, not the code: an early processing test used two fixtures with the same title and author, which the code correctly treated as duplicates. The test data was corrected.
 
 ## Known limitations of the testing
 
-- The live tests have not yet been run from the development environment, which blocks the external APIs. Run `RUN_LIVE_TESTS=1 python -m pytest tests/test_live.py -v` with network access and add the output to `evidence/`.
-- The LLM path is tested with a scripted model. How reliably Qwen2.5-7B follows the JSON schemas is checked only by the live run; every LLM failure falls back to the deterministic path, and the audit trail records when that happens.
+- The live tests depend on network access and on third-party services whose availability changes (see R6 and R7); their output from the Windows run is in `evidence/`.
+- The LLM path is tested with a scripted model. How reliably Qwen2.5-7B follows the JSON schemas is checked only by live runs, which found the problems fixed in R8 and R9; every LLM failure falls back to the deterministic path, and the audit trail records when that happens.
 - The heuristic appraisal lexicon is tested on short, hand-written abstracts, not against a labelled benchmark.

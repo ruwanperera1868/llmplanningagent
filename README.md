@@ -73,6 +73,7 @@ Optional configuration (copy `.env.example` and set the values in your shell or 
 | `HF_MODEL` | Defaults to `Qwen/Qwen2.5-7B-Instruct`. |
 | `LLM_BASE_URL` | Any OpenAI-compatible endpoint. Defaults to the Hugging Face router; set `http://localhost:11434/v1` to use Ollama (below). |
 | `LLM_TIMEOUT` | Seconds per LLM call (default 90). A local model on a CPU needs more, e.g. 900. |
+| `LLM_JSON_MODE` | Set to `1` to ask the server for constrained JSON output (supported by Ollama). Recommended for small local models. |
 | `SEMANTIC_SCHOLAR_API_KEY` | Optional free key from semanticscholar.org/product/api. Avoids the shared pool, which often returns HTTP 429. |
 | `CROSSREF_MAILTO` | Your email, which puts requests in Crossref's "polite pool". |
 | `MAX_CYCLES`, `MIN_RELEVANT_PAPERS` | Tune the critic loop. |
@@ -82,8 +83,8 @@ Optional configuration (copy `.env.example` and set the values in your shell or 
 ```bash
 # install Ollama from https://ollama.com/download, then
 ollama pull qwen2.5:7b
-export LLM_BASE_URL=http://localhost:11434/v1 HF_MODEL=qwen2.5:7b LLM_TIMEOUT=900
-# Windows PowerShell: $env:LLM_BASE_URL="http://localhost:11434/v1"; $env:HF_MODEL="qwen2.5:7b"; $env:LLM_TIMEOUT="900"
+export LLM_BASE_URL=http://localhost:11434/v1 HF_MODEL=qwen2.5:7b LLM_TIMEOUT=900 LLM_JSON_MODE=1
+# Windows PowerShell: $env:LLM_BASE_URL="http://localhost:11434/v1"; $env:HF_MODEL="qwen2.5:7b"; $env:LLM_TIMEOUT="900"; $env:LLM_JSON_MODE="1"
 ```
 
 The Critic sends up to 12 abstracts at once, so set Ollama's context length to at least 16k (Ollama settings, or `OLLAMA_CONTEXT_LENGTH=16384`).
@@ -114,7 +115,7 @@ Enter a question, optionally tick *Offline demo mode*, and press **Investigate**
 ## 5. Testing
 
 ```bash
-python -m pytest -v --cov=evidence_investigator      # 82 tests, no network needed
+python -m pytest -v --cov=evidence_investigator      # 83 tests, no network needed
 RUN_LIVE_TESTS=1 python -m pytest tests/test_live.py  # optional: real APIs and the configured LLM
 ```
 
@@ -131,7 +132,11 @@ The test strategy, results (96% line coverage) and the **remediation log** of th
 | `evidence/run-invalid-input.log` | Input validation (exit code 2) |
 | `evidence/test-report.txt` | Full test run with coverage |
 | `evidence/test-run-1-before-remediation.txt` | The first coverage run, with the warnings that led to fix R3 |
-| `evidence/screenshots/` | The Flask interface: form, briefing, audit trail, cycle-limit briefing, validation error, run history |
+| `evidence/screenshots/01`–`06` | Offline demo in the Flask interface: form, briefing, audit trail, cycle-limit briefing, validation error, run history |
+| `evidence/screenshots/07-live-cli-qwen-local.png` | **Live run** on Windows: real Semantic Scholar and Crossref results, with the Planner, Critic and Reporter all using Qwen2.5-7B under Ollama |
+| `evidence/screenshots/08`–`12` | **Live run** in the Flask interface: run history, briefing, findings, evidence table, and an audit trail showing per-item validation (R8) and the Reporter's fallback after malformed JSON (R9) |
+
+**Live runs (11 October 2026, Windows 11, Python 3.13, Ollama with `qwen2.5:7b`).** Each run took about 5 to 10 minutes on a CPU. They exposed the issues logged as R6 to R9 in `docs/TESTING.md`; every one was handled by a fallback, so no run failed outright.
 
 `scripts/capture_evidence.sh` regenerates the logs and test report; `scripts/capture_screenshots.py` regenerates the screenshots.
 
