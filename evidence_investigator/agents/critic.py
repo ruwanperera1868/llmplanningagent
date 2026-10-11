@@ -20,10 +20,12 @@ from __future__ import annotations
 
 from collections import Counter
 
-from pydantic import BaseModel, ValidationError
+from typing import get_args
+
+from pydantic import ValidationError
 
 from ..llm import LLMClient, LLMError, extract_json
-from ..schemas import Appraisal, AuditEvent, CriticVerdict, Paper
+from ..schemas import Appraisal, AuditEvent, CriticVerdict, Paper, StudyDesign
 from ..state import ResearchState
 from ..text import keywords, overlap_score, split_sentences
 from .planner import core_phrase
@@ -70,8 +72,47 @@ TYPICAL_LIMITATION = {
 }
 
 
-class _AppraisalBatch(BaseModel):
-    appraisals: list[Appraisal]
+DESIGNS = set(get_args(StudyDesign))
+DESIGN_ALIASES = {
+    "meta analysis": "meta-analysis", "systematic review": "review",
+    "literature review": "review", "scoping review": "review", "narrative review": "review",
+    "quasi experimental": "quasi-experimental", "experiment": "experimental",
+    "randomised controlled trial": "experimental", "randomized controlled trial": "experimental",
+    "rct": "experimental", "cross sectional": "observational", "cohort": "observational",
+    "correlational": "observational", "case study": "qualitative", "conceptual": "theoretical",
+}
+STANCE_ALIASES = {"support": "supports", "positive": "supports", "oppose": "opposes",
+                  "negative": "opposes", "against": "opposes", "neutral": "neutral",
+                  "mixed": "mixed", "supports": "supports", "opposes": "opposes"}
+
+
+def coerce_appraisal(item: object) -> Appraisal | None:
+    """Turn one LLM appraisal into a valid ``Appraisal``, or ``None`` to reject it.
+
+    Remediation R8: in the first local run with Qwen2.5-7B the batch failed
+    Pydantic validation as a whole, so all twelve papers fell back to the
+    heuristic, although a 7B model typically gets most items right and slips
+    on a label (e.g. "Systematic Review", "mixed methods") or a field length.
+    Validating the batch all-or-nothing was too strict. Labels are now normalised
+    item by item: known synonyms are mapped, an unknown design becomes "other",
+    over-long text is trimmed, and only an item with no usable stance or
+    finding is rejected, so one bad item no longer discards eleven good ones.
+    """
+    if not isinstance(item, dict):
+        return None
+    design = " ".join(str(item.get("study_design", "other")).lower().replace("-", " ").split())
+    design = DESIGN_ALIASES.get(design, design.replace(" ", "-"))
+    stance = STANCE_ALIASES.get(str(item.get("stance", "")).strip().lower())
+    finding = " ".join(str(item.get("finding") or "").split())
+    if not stance or not finding or not item.get("paper_id"):
+        return None
+    try:
+        return Appraisal(
+            paper_id=str(item["paper_id"]), finding=finding[:600],
+            study_design=design if design in DESIGNS else "other", stance=stance,
+            limitations=" ".join(str(item.get("limitations") or "").split())[:400], method="llm")
+    except ValidationError:
+        return None
 
 
 def heuristic_appraisal(paper: Paper, question: str) -> Appraisal:
@@ -134,14 +175,20 @@ class CriticAgent:
             try:
                 raw = self.llm.complete(SYSTEM, f"Research question: {question}\n\n{listing}",
                                         max_tokens=250 * len(papers) + 200)
-                batch = _AppraisalBatch.model_validate(extract_json(raw))
+                data = extract_json(raw)
+                items = data.get("appraisals", []) if isinstance(data, dict) else data
+                if not isinstance(items, list):
+                    raise LLMError("appraisals is not a list")
                 wanted = {p.paper_id for p in papers}
                 # Appraisals for ids we never sent are discarded: an LLM
                 # "finding" must always trace back to a retrieved source.
-                result = {a.paper_id: a.model_copy(update={"method": "llm"})
-                          for a in batch.appraisals if a.paper_id in wanted}
+                for a in filter(None, map(coerce_appraisal, items)):
+                    if a.paper_id in wanted:
+                        result[a.paper_id] = a
                 how = f"LLM {self.llm.name}"
-            except (LLMError, ValidationError) as exc:
+                if len(result) < len(papers):
+                    how += f", {len(papers) - len(result)} by heuristic"
+            except LLMError as exc:
                 how = f"heuristic after LLM failure: {type(exc).__name__}"
         for p in papers:
             if p.paper_id not in result:

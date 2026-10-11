@@ -98,3 +98,18 @@ def test_llm_failure_falls_back_to_heuristic():
     out = CriticAgent(FakeLLM(critic="not json"))({"question": Q, "cycle": 1, "papers": papers(1)})
     assert out["appraisals"]["p0"].method == "heuristic"
     assert "heuristic after LLM failure" in out["audit"][0].detail
+
+
+def test_llm_labels_are_normalised_item_by_item():
+    # Remediation R8: one unknown label used to discard the whole LLM batch.
+    ps = papers(3)
+    reply = {"appraisals": [
+        {"paper_id": "p0", "finding": "Gains", "study_design": "Systematic Review", "stance": "Positive"},
+        {"paper_id": "p1", "finding": "Mixed", "study_design": "mixed methods", "stance": "mixed"},
+        {"paper_id": "p2", "finding": "?", "study_design": "survey", "stance": "unclear"}]}
+    out = CriticAgent(FakeLLM(critic=json.dumps(reply)))({"question": Q, "cycle": 1, "papers": ps})
+    ap = out["appraisals"]
+    assert (ap["p0"].study_design, ap["p0"].stance, ap["p0"].method) == ("review", "supports", "llm")
+    assert (ap["p1"].study_design, ap["p1"].method) == ("other", "llm")
+    assert ap["p2"].method == "heuristic"                 # unusable stance -> heuristic
+    assert "1 by heuristic" in out["audit"][0].detail
