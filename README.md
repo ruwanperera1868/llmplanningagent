@@ -73,6 +73,7 @@ Optional configuration (copy `.env.example` and set the values in your shell or 
 | `HF_MODEL` | Defaults to `Qwen/Qwen2.5-7B-Instruct`. |
 | `LLM_BASE_URL` | Any OpenAI-compatible endpoint. Defaults to the Hugging Face router; set `http://localhost:11434/v1` to use Ollama (below). |
 | `LLM_TIMEOUT` | Seconds per LLM call (default 90). A local model on a CPU needs more, e.g. 900. |
+| `SEMANTIC_SCHOLAR_API_KEY` | Optional free key from semanticscholar.org/product/api. Avoids the shared pool, which often returns HTTP 429. |
 | `CROSSREF_MAILTO` | Your email, which puts requests in Crossref's "polite pool". |
 | `MAX_CYCLES`, `MIN_RELEVANT_PAPERS` | Tune the critic loop. |
 
@@ -113,7 +114,7 @@ Enter a question, optionally tick *Offline demo mode*, and press **Investigate**
 ## 5. Testing
 
 ```bash
-python -m pytest -v --cov=evidence_investigator      # 79 tests, no network needed
+python -m pytest -v --cov=evidence_investigator      # 81 tests, no network needed
 RUN_LIVE_TESTS=1 python -m pytest tests/test_live.py  # optional: real APIs and the configured LLM
 ```
 

@@ -49,25 +49,29 @@ class RateLimiter:
         self._last = self._clock()
 
 
-def http_json(url: str, params: dict, timeout: float = 20.0, retries: int = 2) -> dict:
+def http_json(url: str, params: dict, timeout: float = 20.0, retries: int = 4,
+              headers: dict | None = None) -> dict:
     """GET JSON, backing off and retrying only on transient failures.
 
     429 and 5xx responses and network timeouts are retried, because free tiers
     return them often. Other 4xx errors are permanent (a bad request will not
     improve), so they fail at once. Remediation R4: the first version retried
     every error, including 404s, which wasted the shared rate limit.
+    Remediation R7: the first live run lost every Semantic Scholar query to
+    HTTP 429 after only two short retries. Back-off now doubles up to four
+    times (2-16 s) and honours the server's Retry-After header when given.
     """
+    send = {"User-Agent": USER_AGENT, **(headers or {})}
     for attempt in range(retries + 1):
         try:
-            resp = requests.get(url, params=params, timeout=timeout,
-                                headers={"User-Agent": USER_AGENT})
+            resp = requests.get(url, params=params, timeout=timeout, headers=send)
         except requests.RequestException as exc:
             if attempt == retries:
                 raise SourceError(f"{url} failed: {exc}") from exc
             time.sleep(2 ** (attempt + 1))
             continue
         if resp.status_code in TRANSIENT and attempt < retries:
-            time.sleep(2 ** (attempt + 1))
+            time.sleep(_backoff(resp, attempt))
             continue
         if resp.status_code >= 400:
             raise SourceError(f"{url} returned HTTP {resp.status_code}")
@@ -76,3 +80,12 @@ def http_json(url: str, params: dict, timeout: float = 20.0, retries: int = 2) -
         except ValueError as exc:
             raise SourceError(f"{url} returned invalid JSON") from exc
     raise SourceError(f"{url} failed after {retries + 1} attempts")
+
+
+def _backoff(resp, attempt: int) -> float:
+    # Capped so one stubborn source cannot stall the whole run for minutes.
+    try:
+        hinted = float(resp.headers.get("Retry-After", 0))
+    except (TypeError, ValueError):
+        hinted = 0.0
+    return min(max(2 ** (attempt + 1), hinted), 30.0)

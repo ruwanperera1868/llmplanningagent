@@ -48,7 +48,7 @@ def validate_question(question: str) -> str:
 def default_sources(settings: Settings) -> list[SearchSource]:
     if settings.offline:
         return [OfflineSource()]
-    available = {"semantic_scholar": lambda: SemanticScholarSource(),
+    available = {"semantic_scholar": lambda: SemanticScholarSource(api_key=settings.semantic_scholar_api_key),
                  "crossref": lambda: CrossrefSource(mailto=settings.crossref_mailto)}
     return [available[name]() for name in settings.sources if name in available]
 

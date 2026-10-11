@@ -25,13 +25,13 @@ RUN_LIVE_TESTS=1 python -m pytest tests/test_live.py -v
 
 ## Results
 
-Final run (`evidence/test-report.txt`): **79 passed, 4 skipped (live), 0 failed; 97% line coverage.**
+Final run (`evidence/test-report.txt`): **81 passed, 4 skipped (live), 0 failed; 97% line coverage.**
 
 | File | Tests |
 |---|---|
 | test_critic.py | 14 |
 | test_functional_workflow.py | 11 |
-| test_sources.py | 11 |
+| test_sources.py | 13 |
 | test_llm.py | 12 |
 | test_planner.py | 6 |
 | test_reporter.py | 6 |
@@ -55,6 +55,7 @@ Issues found during development and testing, in the order they were found.
 | R4 | New retry test | A permanent HTTP 404 was retried like a 429 until the fake ran out of responses (`IndexError`), so a bad request would waste the shared rate limit. | `http_json` retries only timeouts, 429 and 5xx; other 4xx errors fail immediately. | `test_http_json_retries_transient_errors` (5 cases) |
 | R5 | Reviewing the briefing screenshot | References were ordered by title, not alphabetically by first author's surname as Harvard style requires, and the summary printed raw Python dictionaries. | `rendering.by_first_author` is used by both the Markdown and HTML outputs; counts are printed as readable text. | `test_references_sorted_by_first_author_surname` |
 | R6 | First live run on Windows | Every LLM call failed and the agents fell back to their heuristics. The log said only "400 Bad Request". Calling the router directly showed `model_not_supported`: no provider served Qwen2.5-7B-Instruct any more, and the free account's credit for larger models was used up (HTTP 402). | `llm.py` now keeps the provider's error message in the `LLMError`, and the endpoint is configurable (`LLM_BASE_URL`, `LLM_TIMEOUT`). The same client reaches the Hugging Face router, a hosted alternative, or Qwen2.5-7B running locally under Ollama, which needs no token. The graceful fallback worked as designed: the run still produced a briefing and the audit trail recorded each failure. | `test_provider_error_message_is_kept`, `test_local_endpoint_needs_no_token_and_sends_no_auth_header`, `test_default_llm_uses_configured_endpoint` |
+| R7 | Same live run | Semantic Scholar answered every query with HTTP 429 (its shared unauthenticated pool was throttled), so only Crossref contributed papers. Two short retries were not enough. | `http_json` now retries up to four times with doubling back-off (2 to 16 s), honours `Retry-After` (capped at 30 s), and an optional `SEMANTIC_SCHOLAR_API_KEY` moves requests to a dedicated rate limit. Retrieval still continues with the other source if one fails, as before. | `test_backoff_honours_retry_after_and_is_capped`, `test_semantic_scholar_sends_api_key_only_when_set`, `test_http_json_retries_transient_errors` |
 
 One failure was in the test, not the code: an early processing test used two fixtures with the same title and author, which the code correctly treated as duplicates. The test data was corrected.
 

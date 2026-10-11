@@ -31,6 +31,7 @@ class Settings:
     # is a setting rather than a constant.
     llm_timeout: int = 90
     crossref_mailto: str = ""
+    semantic_scholar_api_key: str = ""
     db_path: Path = Path("data/investigator.db")
     offline: bool = False
 
@@ -60,6 +61,7 @@ class Settings:
             llm_base_url=os.environ.get("LLM_BASE_URL", "").strip() or cls.llm_base_url,
             llm_timeout=_int("LLM_TIMEOUT", cls.llm_timeout),
             crossref_mailto=os.environ.get("CROSSREF_MAILTO", "").strip(),
+            semantic_scholar_api_key=os.environ.get("SEMANTIC_SCHOLAR_API_KEY", "").strip(),
             db_path=Path(os.environ.get("INVESTIGATOR_DB", cls.db_path)),
             offline=os.environ.get("INVESTIGATOR_OFFLINE", "") == "1",
             max_cycles=_int("MAX_CYCLES", cls.max_cycles),

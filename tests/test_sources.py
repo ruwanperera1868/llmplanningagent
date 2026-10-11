@@ -80,7 +80,7 @@ class FakeHTTP:
 
 
 @pytest.mark.parametrize("statuses,ok", [([200], True), ([429, 200], True), (["timeout", 503, 200], True),
-                                         ([429, 429, 429], False), ([404], False)])
+                                         ([429] * 5, False), ([404], False)])
 def test_http_json_retries_transient_errors(monkeypatch, statuses, ok):
     fake = FakeHTTP(statuses)
     monkeypatch.setattr(base.requests, "get", fake)
@@ -90,3 +90,24 @@ def test_http_json_retries_transient_errors(monkeypatch, statuses, ok):
     else:
         with pytest.raises(SourceError):
             base.http_json("https://x", {})
+
+
+def test_backoff_honours_retry_after_and_is_capped():
+    resp = requests.Response()
+    resp.headers["Retry-After"] = "7"
+    assert base._backoff(resp, 0) == 7          # server hint beats the 2 s default
+    resp.headers["Retry-After"] = "600"
+    assert base._backoff(resp, 0) == 30         # never stall a run for minutes
+    assert base._backoff(requests.Response(), 2) == 8
+
+
+def test_semantic_scholar_sends_api_key_only_when_set():
+    seen = []
+
+    def fetch(url, params, headers=None):
+        seen.append(headers)
+        return load_fixture("semantic_scholar_search.json")
+
+    SemanticScholarSource(fetch, limiter=NoWait(), api_key="k").search("q", 1)
+    SemanticScholarSource(fetch, limiter=NoWait()).search("q", 1)
+    assert seen == [{"x-api-key": "k"}, None]
