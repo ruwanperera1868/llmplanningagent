@@ -2,7 +2,7 @@
 
 Academic Evidence Investigator: Unit 11 individual presentation, Ruwan Perera
 
-About 1139 words, roughly 8 minutes at a natural speaking pace.
+About 1242 words, roughly 9 minutes at a natural speaking pace.
 
 ## Slide 1: Academic Evidence Investigator
 
@@ -18,7 +18,7 @@ This is the architecture from the proposal, implemented as a LangGraph state gra
 
 ## Slide 4: The LLM proposes, Python verifies
 
-The guiding principle, taken from the proposal, is that the LLM only does work that needs language understanding. Qwen2.5-7B-Instruct, through Hugging Face, proposes a plan, appraises abstracts and drafts the briefing. Python handles everything with one correct answer: deduplication by DOI and then by title and first author, ranking, rate limiting, and retries. Every LLM output crosses a Pydantic schema before anything else uses it. The Critic sends all new papers to the model in one batched call, and only new papers, which keeps token cost in line with new evidence.
+The guiding principle, taken from the proposal, is that the LLM only does work that needs language understanding. Qwen2.5-7B-Instruct proposes a plan, appraises abstracts and drafts the briefing. For the live demonstration it ran locally under Ollama, through the same OpenAI-style interface the code uses for Hugging Face. Python handles everything with one correct answer: deduplication by DOI and then by title and first author, ranking, rate limiting, and retries. Every LLM output crosses a Pydantic schema before anything else uses it. The Critic sends all new papers to the model in one batched call, and only new papers, which keeps token cost in line with new evidence.
 
 ## Slide 5: Four decisions that make it trustworthy
 
@@ -26,19 +26,19 @@ These four decisions are where most of the critical thinking in the code sits. F
 
 ## Slide 6: Demonstration: from question to briefing
 
-Here is the Flask interface after an offline run. The researcher types a question and presses Investigate. The status line at the top is written by Python from the Critic's verdict, so the system cannot overstate how complete its evidence is. Each key finding carries in-text citations to the papers it came from. Below that are conflicting evidence, limitations, and possible research opportunities, framed only as gaps within the retrieved papers. The evidence table shows each paper's design, stance and relevance, and the audit trail lists every search and decision. The whole run is stored in SQLite and can be reopened or downloaded as JSON. With a Hugging Face token set, the same code searches Semantic Scholar and Crossref live and uses Qwen for each LLM step; offline mode makes this demonstration reproducible.
+Here is the Flask interface after a live run on my own computer, asking the question from our Unit 6 proposal: does generative AI improve university students' academic performance? The agent searched Semantic Scholar and Crossref and used Qwen running locally. The status line at the top is written by Python from the Critic's verdict, so the system cannot overstate how complete its evidence is. Here the Critic judged twelve papers sufficient and balanced after one cycle. Each key finding carries in-text citations to the papers it came from. Below that are conflicting evidence, limitations, and possible research opportunities, framed only as gaps within the retrieved papers. The evidence table shows each paper's design, stance and relevance, and the audit trail lists every search and decision, including which steps used the model and which fell back. The whole run is stored in SQLite and can be reopened or downloaded as JSON. Offline mode runs the same code on built-in data, which keeps the next demonstration reproducible.
 
 ## Slide 7: Demonstration: the Critic drives re-planning
 
 This log shows the autonomous loop. For the question "Does retrieval reduce hallucination?" the first cycle retrieves only two relevant papers, both experimental. The Critic judges this insufficient and unbalanced, and suggests targeted searches. The Planner re-plans with queries for randomised controlled trials and meta-analyses. When that still finds little, it broadens the query in the third cycle. At the cycle limit the Reporter writes the briefing anyway, but labels it provisional and says why. By contrast, a question about how LLM agents plan, act and reflect was judged sufficient and balanced after one cycle. So the agent's behaviour depends on what it finds, not on a fixed script.
 
-## Slide 8: Testing: 76 tests, no network needed
+## Slide 8: Testing: 83 tests, no network needed
 
-The test suite has 76 automated tests, all passing, with 97 percent line coverage, and it needs no network or API key. That is possible because the sources and the LLM are injected through small interfaces, so tests use scripted fakes and synthetic API responses. Sixty unit tests cover each agent, parser and rule. Eleven functional tests run the real graph end to end and prove the behaviours the proposal promised, listed on the right: the re-plan, the cycle limit, an outage, deduplication, an invented citation being removed, and a complete LLM outage still producing a briefing. Interface tests drive the command line and the web app, including escaping a malicious paper title. Four live tests call the real services when enabled.
+The test suite has 83 automated tests, all passing, with 96 percent line coverage, and it needs no network or API key. That is possible because the sources and the LLM are injected through small interfaces, so tests use scripted fakes and synthetic API responses. Sixty-seven unit tests cover each agent, parser and rule. Eleven functional tests run the real graph end to end and prove the behaviours the proposal promised, listed on the right: the re-plan, the cycle limit, an outage, deduplication, an invented citation being removed, and a complete LLM outage still producing a briefing. Interface tests drive the command line and the web app, including escaping a malicious paper title. Four live tests call the real services and the model when enabled.
 
 ## Slide 9: What testing found, and what changed
 
-Testing changed the code. The first smoke run showed that "LLM-based" never matched abstracts that say "large language models", so the agent wasted all three cycles. Adding synonym folding and light stemming took the same question from two papers in three cycles to ten papers in one. The same run showed that the Critic treated all-neutral evidence as biased. The first coverage report showed leaked database connections, and the suite now fails on any leak. A new retry test showed a 404 being retried like a rate limit. Reviewing a screenshot showed references in the wrong order for Harvard style. Each fix has a regression test, the full log is in docs/TESTING.md, and the Git history shows the system being built up step by step.
+Testing changed the code. Offline, the first smoke run showed that "LLM-based" never matched abstracts that say "large language models", so the agent wasted all three cycles; synonym folding and light stemming took it from two papers in three cycles to ten in one. Other tests caught all-neutral evidence being called biased, leaked database connections, a 404 being retried like a rate limit, and references in the wrong order. Running live on Windows found four more problems. The hosted Qwen model was no longer served and the free credit ran out, so I made the endpoint configurable and ran Qwen locally. Semantic Scholar throttled requests, so retries now back off longer. One malformed appraisal discarded all twelve, so each is now validated separately, and eleven of twelve were then kept. And the model once wrote invalid JSON, so an optional JSON mode now constrains its output. In every case the fallbacks kept the run going and the audit trail showed what happened. Each fix has a regression test, and the full log is in docs/TESTING.md.
 
 ## Slide 10: Responsible use, limits and next steps
 
