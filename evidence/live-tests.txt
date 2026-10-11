@@ -1,0 +1,63 @@
+﻿============================= test session starts =============================
+platform win32 -- Python 3.13.16, pytest-9.1.1, pluggy-1.6.0 -- C:\Users\ruwan\Documents\llmplanningagent\.venv\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: C:\Users\ruwan\Documents\llmplanningagent
+configfile: pyproject.toml
+plugins: anyio-4.15.1, langsmith-0.14.7, cov-7.1.0
+collecting ... collected 4 items
+
+tests/test_live.py::test_semantic_scholar_live FAILED                    [ 25%]
+tests/test_live.py::test_crossref_live PASSED                            [ 50%]
+tests/test_live.py::test_llm_live PASSED                                 [ 75%]
+tests/test_live.py::test_full_live_run PASSED                            [100%]
+
+================================== FAILURES ===================================
+_________________________ test_semantic_scholar_live __________________________
+
+    def test_semantic_scholar_live():
+>       assert SemanticScholarSource().search(Q, 5)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_live.py:22: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+evidence_investigator\sources\semantic_scholar.py:56: in search
+    return parse(self._fetch(API_URL, {"query": query, "limit": limit, "fields": FIELDS}))
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+url = 'https://api.semanticscholar.org/graph/v1/paper/search'
+params = {'query': 'generative AI university student academic performance', 'limit': 5, 'fields': 'title,authors,year,abstract,url,venue,externalIds'}
+timeout = 20.0, retries = 4, headers = None
+
+    def http_json(url: str, params: dict, timeout: float = 20.0, retries: int = 4,
+                  headers: dict | None = None) -> dict:
+        """GET JSON, backing off and retrying only on transient failures.
+    
+        429 and 5xx responses and network timeouts are retried, because free tiers
+        return them often. Other 4xx errors are permanent (a bad request will not
+        improve), so they fail at once. Remediation R4: the first version retried
+        every error, including 404s, which wasted the shared rate limit.
+        Remediation R7: the first live run lost every Semantic Scholar query to
+        HTTP 429 after only two short retries. Back-off now doubles up to four
+        times (2-16 s) and honours the server's Retry-After header when given.
+        """
+        send = {"User-Agent": USER_AGENT, **(headers or {})}
+        for attempt in range(retries + 1):
+            try:
+                resp = requests.get(url, params=params, timeout=timeout, headers=send)
+            except requests.RequestException as exc:
+                if attempt == retries:
+                    raise SourceError(f"{url} failed: {exc}") from exc
+                time.sleep(2 ** (attempt + 1))
+                continue
+            if resp.status_code in TRANSIENT and attempt < retries:
+                time.sleep(_backoff(resp, attempt))
+                continue
+            if resp.status_code >= 400:
+>               raise SourceError(f"{url} returned HTTP {resp.status_code}")
+E               evidence_investigator.sources.base.SourceError: https://api.semanticscholar.org/graph/v1/paper/search returned HTTP 429
+
+evidence_investigator\sources\base.py:77: SourceError
+=========================== short test summary info ===========================
+FAILED tests/test_live.py::test_semantic_scholar_live - evidence_investigator...
+=================== 1 failed, 3 passed in 523.10s (0:08:43) ===================
