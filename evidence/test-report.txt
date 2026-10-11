@@ -1,83 +1,86 @@
 ============================= test session starts ==============================
-platform linux -- Python 3.13.16, pytest-9.1.1, pluggy-1.6.0 -- python
+platform linux -- Python 3.13.16, pytest-9.1.1, pluggy-1.6.0 -- /tmp/claude-0/v/bin/python
 cachedir: .pytest_cache
-rootdir: /home/claude/ei
+rootdir: /home/claude/llmplanningagent
 configfile: pyproject.toml
 testpaths: tests
-plugins: langsmith-0.14.4, anyio-4.15.1, cov-7.1.0
-collecting ... collected 80 items
+plugins: langsmith-0.14.7, anyio-4.15.1, cov-7.1.0
+collecting ... collected 83 items
 
 tests/test_critic.py::test_heuristic_appraisal[A systematic review and meta-analysis of 40 trials showed AI improved scores.-meta-analysis-supports] PASSED [  1%]
 tests/test_critic.py::test_heuristic_appraisal[We conducted a randomised controlled trial; AI tutoring improved grades.-experimental-supports] PASSED [  2%]
 tests/test_critic.py::test_heuristic_appraisal[Interviews with lecturers raised concerns about integrity.-qualitative-opposes] PASSED [  3%]
-tests/test_critic.py::test_heuristic_appraisal[A questionnaire of 500 respondents found no significant difference but some benefit.-survey-mixed] PASSED [  5%]
+tests/test_critic.py::test_heuristic_appraisal[A questionnaire of 500 respondents found no significant difference but some benefit.-survey-mixed] PASSED [  4%]
 tests/test_critic.py::test_heuristic_appraisal[Students used chatbots in class.-other-neutral] PASSED [  6%]
 tests/test_critic.py::test_heuristic_prefers_stated_limitation PASSED    [  7%]
 tests/test_critic.py::test_judge_sufficient_when_enough_varied_and_not_one_sided PASSED [  8%]
-tests/test_critic.py::test_judge_flags_too_few_papers_and_suggests_queries PASSED [ 10%]
-tests/test_critic.py::test_judge_flags_one_sided_evidence PASSED         [ 11%]
+tests/test_critic.py::test_judge_flags_too_few_papers_and_suggests_queries PASSED [  9%]
+tests/test_critic.py::test_judge_flags_one_sided_evidence PASSED         [ 10%]
 tests/test_critic.py::test_all_neutral_is_not_one_sided PASSED           [ 12%]
 tests/test_critic.py::test_judge_ignores_low_relevance_and_does_not_resuggest_tried_queries PASSED [ 13%]
-tests/test_critic.py::test_llm_appraisals_are_grounded_and_gaps_filled_by_heuristic PASSED [ 15%]
-tests/test_critic.py::test_only_new_papers_are_sent_to_llm PASSED        [ 16%]
-tests/test_critic.py::test_llm_failure_falls_back_to_heuristic PASSED    [ 17%]
+tests/test_critic.py::test_llm_appraisals_are_grounded_and_gaps_filled_by_heuristic PASSED [ 14%]
+tests/test_critic.py::test_only_new_papers_are_sent_to_llm PASSED        [ 15%]
+tests/test_critic.py::test_llm_failure_falls_back_to_heuristic PASSED    [ 16%]
 tests/test_functional_workflow.py::test_offline_end_to_end_produces_grounded_briefing PASSED [ 18%]
-tests/test_functional_workflow.py::test_critic_triggers_replan_when_first_search_is_weak PASSED [ 20%]
-tests/test_functional_workflow.py::test_loop_stops_at_max_cycles_and_flags_provisional PASSED [ 21%]
-tests/test_functional_workflow.py::test_one_source_failing_does_not_stop_the_run PASSED [ 22%]
-tests/test_functional_workflow.py::test_duplicates_across_sources_are_merged PASSED [ 23%]
-tests/test_functional_workflow.py::test_full_llm_path_with_scripted_model PASSED [ 25%]
-tests/test_functional_workflow.py::test_llm_outage_degrades_gracefully PASSED [ 26%]
-tests/test_functional_workflow.py::test_question_validation[] PASSED     [ 27%]
-tests/test_functional_workflow.py::test_question_validation[   ] PASSED  [ 28%]
-tests/test_functional_workflow.py::test_question_validation[short] PASSED [ 30%]
-tests/test_functional_workflow.py::test_question_validation[xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx] PASSED [ 31%]
-tests/test_interfaces.py::test_cli_offline_writes_briefing PASSED        [ 32%]
-tests/test_interfaces.py::test_cli_rejects_invalid_question PASSED       [ 33%]
-tests/test_interfaces.py::test_web_flow_question_to_briefing PASSED      [ 35%]
-tests/test_interfaces.py::test_web_rejects_bad_input_and_unknown_runs PASSED [ 36%]
-tests/test_interfaces.py::test_web_escapes_untrusted_text_from_sources PASSED [ 37%]
-tests/test_live.py::test_semantic_scholar_live SKIPPED (set RUN_LIVE...) [ 38%]
-tests/test_live.py::test_crossref_live SKIPPED (set RUN_LIVE_TESTS=1)    [ 40%]
-tests/test_live.py::test_hugging_face_live SKIPPED (HF_TOKEN not set)    [ 41%]
-tests/test_live.py::test_full_live_run SKIPPED (set RUN_LIVE_TESTS=1)    [ 42%]
-tests/test_llm.py::test_extract_json_handles_fences_and_prose PASSED     [ 43%]
-tests/test_llm.py::test_extract_json_rejects_bad_output[no json here] PASSED [ 45%]
-tests/test_llm.py::test_extract_json_rejects_bad_output[{"a": ] PASSED   [ 46%]
-tests/test_llm.py::test_extract_json_rejects_bad_output[{'single': 'quotes'}] PASSED [ 47%]
-tests/test_llm.py::test_structured_call_validates_schema PASSED          [ 48%]
-tests/test_llm.py::test_search_plan_trims_long_queries PASSED            [ 50%]
-tests/test_llm.py::test_hf_client_success_sends_model_and_auth PASSED    [ 51%]
-tests/test_llm.py::test_hf_client_errors_become_llm_error_without_leaking_token PASSED [ 52%]
-tests/test_llm.py::test_hf_client_requires_token PASSED                  [ 53%]
-tests/test_planner.py::test_offline_initial_plan_uses_keyword_fallback PASSED [ 55%]
-tests/test_planner.py::test_llm_plan_is_used_when_valid PASSED           [ 56%]
-tests/test_planner.py::test_invalid_llm_plan_falls_back_and_is_logged PASSED [ 57%]
-tests/test_planner.py::test_replan_uses_critic_suggestions_and_skips_tried_queries PASSED [ 58%]
-tests/test_planner.py::test_replan_llm_must_produce_new_queries PASSED   [ 60%]
-tests/test_planner.py::test_replan_broadens_when_every_idea_was_tried PASSED [ 61%]
-tests/test_processing.py::test_dedupes_by_doi_across_sources_keeping_record_with_abstract PASSED [ 62%]
-tests/test_processing.py::test_dedupes_by_title_and_first_author_when_no_doi PASSED [ 63%]
-tests/test_processing.py::test_filters_missing_abstract_and_low_relevance_then_ranks PASSED [ 65%]
-tests/test_processing.py::test_limit_and_empty_input PASSED              [ 66%]
-tests/test_rendering_storage.py::test_harvard_author_initials PASSED     [ 67%]
-tests/test_rendering_storage.py::test_in_text_variants PASSED            [ 68%]
-tests/test_rendering_storage.py::test_reference_follows_cite_them_right_harvard PASSED [ 70%]
-tests/test_rendering_storage.py::test_storage_round_trip_and_listing PASSED [ 71%]
-tests/test_rendering_storage.py::test_references_sorted_by_first_author_surname PASSED [ 72%]
-tests/test_reporter.py::test_ground_removes_unknown_citations PASSED     [ 73%]
+tests/test_functional_workflow.py::test_critic_triggers_replan_when_first_search_is_weak PASSED [ 19%]
+tests/test_functional_workflow.py::test_loop_stops_at_max_cycles_and_flags_provisional PASSED [ 20%]
+tests/test_functional_workflow.py::test_one_source_failing_does_not_stop_the_run PASSED [ 21%]
+tests/test_functional_workflow.py::test_duplicates_across_sources_are_merged PASSED [ 22%]
+tests/test_functional_workflow.py::test_full_llm_path_with_scripted_model PASSED [ 24%]
+tests/test_functional_workflow.py::test_llm_outage_degrades_gracefully PASSED [ 25%]
+tests/test_functional_workflow.py::test_question_validation[] PASSED     [ 26%]
+tests/test_functional_workflow.py::test_question_validation[   ] PASSED  [ 27%]
+tests/test_functional_workflow.py::test_question_validation[short] PASSED [ 28%]
+tests/test_functional_workflow.py::test_question_validation[xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx] PASSED [ 30%]
+tests/test_interfaces.py::test_cli_offline_writes_briefing PASSED        [ 31%]
+tests/test_interfaces.py::test_cli_rejects_invalid_question PASSED       [ 32%]
+tests/test_interfaces.py::test_web_flow_question_to_briefing PASSED      [ 33%]
+tests/test_interfaces.py::test_web_rejects_bad_input_and_unknown_runs PASSED [ 34%]
+tests/test_interfaces.py::test_web_escapes_untrusted_text_from_sources PASSED [ 36%]
+tests/test_live.py::test_semantic_scholar_live SKIPPED (set RUN_LIVE...) [ 37%]
+tests/test_live.py::test_crossref_live SKIPPED (set RUN_LIVE_TESTS=1)    [ 38%]
+tests/test_live.py::test_llm_live SKIPPED (set HF_TOKEN or LLM_BASE_URL) [ 39%]
+tests/test_live.py::test_full_live_run SKIPPED (set RUN_LIVE_TESTS=1)    [ 40%]
+tests/test_llm.py::test_extract_json_handles_fences_and_prose PASSED     [ 42%]
+tests/test_llm.py::test_extract_json_rejects_bad_output[no json here] PASSED [ 43%]
+tests/test_llm.py::test_extract_json_rejects_bad_output[{"a": ] PASSED   [ 44%]
+tests/test_llm.py::test_extract_json_rejects_bad_output[{'single': 'quotes'}] PASSED [ 45%]
+tests/test_llm.py::test_structured_call_validates_schema PASSED          [ 46%]
+tests/test_llm.py::test_search_plan_trims_long_queries PASSED            [ 48%]
+tests/test_llm.py::test_hf_client_success_sends_model_and_auth PASSED    [ 49%]
+tests/test_llm.py::test_hf_client_errors_become_llm_error_without_leaking_token PASSED [ 50%]
+tests/test_llm.py::test_hf_client_requires_token PASSED                  [ 51%]
+tests/test_llm.py::test_local_endpoint_needs_no_token_and_sends_no_auth_header PASSED [ 53%]
+tests/test_llm.py::test_provider_error_message_is_kept PASSED            [ 54%]
+tests/test_llm.py::test_default_llm_uses_configured_endpoint PASSED      [ 55%]
+tests/test_planner.py::test_offline_initial_plan_uses_keyword_fallback PASSED [ 56%]
+tests/test_planner.py::test_llm_plan_is_used_when_valid PASSED           [ 57%]
+tests/test_planner.py::test_invalid_llm_plan_falls_back_and_is_logged PASSED [ 59%]
+tests/test_planner.py::test_replan_uses_critic_suggestions_and_skips_tried_queries PASSED [ 60%]
+tests/test_planner.py::test_replan_llm_must_produce_new_queries PASSED   [ 61%]
+tests/test_planner.py::test_replan_broadens_when_every_idea_was_tried PASSED [ 62%]
+tests/test_processing.py::test_dedupes_by_doi_across_sources_keeping_record_with_abstract PASSED [ 63%]
+tests/test_processing.py::test_dedupes_by_title_and_first_author_when_no_doi PASSED [ 65%]
+tests/test_processing.py::test_filters_missing_abstract_and_low_relevance_then_ranks PASSED [ 66%]
+tests/test_processing.py::test_limit_and_empty_input PASSED              [ 67%]
+tests/test_rendering_storage.py::test_harvard_author_initials PASSED     [ 68%]
+tests/test_rendering_storage.py::test_in_text_variants PASSED            [ 69%]
+tests/test_rendering_storage.py::test_reference_follows_cite_them_right_harvard PASSED [ 71%]
+tests/test_rendering_storage.py::test_storage_round_trip_and_listing PASSED [ 72%]
+tests/test_rendering_storage.py::test_references_sorted_by_first_author_surname PASSED [ 73%]
+tests/test_reporter.py::test_ground_removes_unknown_citations PASSED     [ 74%]
 tests/test_reporter.py::test_deterministic_briefing_reports_conflicts_and_missing_designs PASSED [ 75%]
-tests/test_reporter.py::test_evidence_status_is_honest_when_cycle_limit_reached PASSED [ 76%]
-tests/test_reporter.py::test_llm_briefing_used_when_grounded PASSED      [ 77%]
-tests/test_reporter.py::test_llm_briefing_with_no_valid_citations_is_replaced PASSED [ 78%]
+tests/test_reporter.py::test_evidence_status_is_honest_when_cycle_limit_reached PASSED [ 77%]
+tests/test_reporter.py::test_llm_briefing_used_when_grounded PASSED      [ 78%]
+tests/test_reporter.py::test_llm_briefing_with_no_valid_citations_is_replaced PASSED [ 79%]
 tests/test_reporter.py::test_reporter_saves_to_storage PASSED            [ 80%]
 tests/test_sources.py::test_semantic_scholar_parse_maps_fields_and_doi_ids PASSED [ 81%]
-tests/test_sources.py::test_semantic_scholar_rejects_unexpected_payload PASSED [ 82%]
-tests/test_sources.py::test_crossref_parse_strips_jats_and_skips_non_articles PASSED [ 83%]
+tests/test_sources.py::test_semantic_scholar_rejects_unexpected_payload PASSED [ 83%]
+tests/test_sources.py::test_crossref_parse_strips_jats_and_skips_non_articles PASSED [ 84%]
 tests/test_sources.py::test_sources_send_expected_parameters PASSED      [ 85%]
 tests/test_sources.py::test_rate_limiter_sleeps_for_remaining_interval PASSED [ 86%]
 tests/test_sources.py::test_offline_source_ranks_and_thresholds PASSED   [ 87%]
-tests/test_sources.py::test_http_json_retries_transient_errors[statuses0-True] PASSED [ 88%]
+tests/test_sources.py::test_http_json_retries_transient_errors[statuses0-True] PASSED [ 89%]
 tests/test_sources.py::test_http_json_retries_transient_errors[statuses1-True] PASSED [ 90%]
 tests/test_sources.py::test_http_json_retries_transient_errors[statuses2-True] PASSED [ 91%]
 tests/test_sources.py::test_http_json_retries_transient_errors[statuses3-False] PASSED [ 92%]
@@ -97,15 +100,15 @@ evidence_investigator/__init__.py                       1      0   100%
 evidence_investigator/__main__.py                       2      2     0%   1-3
 evidence_investigator/agents/__init__.py                5      0   100%
 evidence_investigator/agents/critic.py                 88      0   100%
-evidence_investigator/agents/planner.py                58      3    95%   113-115
-evidence_investigator/agents/reporter.py               63      1    98%   37
+evidence_investigator/agents/planner.py                58      3    95%   114-116
+evidence_investigator/agents/reporter.py               63      1    98%   40
 evidence_investigator/agents/retrieval.py              22      0   100%
 evidence_investigator/cli.py                           42      4    90%   34, 49-50, 56
-evidence_investigator/config.py                        27      2    93%   19-20
+evidence_investigator/config.py                        29      2    93%   19-20
 evidence_investigator/data/__init__.py                  0      0   100%
 evidence_investigator/graph.py                         32      0   100%
-evidence_investigator/investigator.py                  56      3    95%   51-53, 60
-evidence_investigator/llm.py                           44      0   100%
+evidence_investigator/investigator.py                  58      2    97%   51-53
+evidence_investigator/llm.py                           57      1    98%   90
 evidence_investigator/processing.py                    43      0   100%
 evidence_investigator/rendering.py                     63      3    95%   25, 39, 54
 evidence_investigator/schemas.py                       62      1    98%   38
@@ -120,10 +123,10 @@ evidence_investigator/text.py                          40      0   100%
 evidence_investigator/web/__init__.py                   0      0   100%
 evidence_investigator/web/app.py                       39      2    95%   68, 82
 ---------------------------------------------------------------------------------
-TOTAL                                                 880     27    97%
+TOTAL                                                 897     27    97%
 =========================== short test summary info ============================
 SKIPPED [1] tests/test_live.py:21: set RUN_LIVE_TESTS=1
 SKIPPED [1] tests/test_live.py:25: set RUN_LIVE_TESTS=1
-SKIPPED [1] tests/test_live.py:30: HF_TOKEN not set
-SKIPPED [1] tests/test_live.py:36: set RUN_LIVE_TESTS=1
-======================== 76 passed, 4 skipped in 3.16s =========================
+SKIPPED [1] tests/test_live.py:30: set HF_TOKEN or LLM_BASE_URL
+SKIPPED [1] tests/test_live.py:38: set RUN_LIVE_TESTS=1
+======================== 79 passed, 4 skipped in 1.92s =========================

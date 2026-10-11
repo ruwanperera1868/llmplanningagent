@@ -24,6 +24,12 @@ def _int(name: str, default: int) -> int:
 class Settings:
     hf_token: str = ""
     hf_model: str = "Qwen/Qwen2.5-7B-Instruct"
+    # Any OpenAI-compatible endpoint: the Hugging Face router by default, or
+    # e.g. http://localhost:11434/v1 for Ollama (see llm.py, remediation R6).
+    llm_base_url: str = "https://router.huggingface.co/v1"
+    # A local model on a laptop CPU can take minutes per call, so the timeout
+    # is a setting rather than a constant.
+    llm_timeout: int = 90
     crossref_mailto: str = ""
     db_path: Path = Path("data/investigator.db")
     offline: bool = False
@@ -51,6 +57,8 @@ class Settings:
         values = dict(
             hf_token=os.environ.get("HF_TOKEN", "").strip(),
             hf_model=os.environ.get("HF_MODEL", cls.hf_model),
+            llm_base_url=os.environ.get("LLM_BASE_URL", "").strip() or cls.llm_base_url,
+            llm_timeout=_int("LLM_TIMEOUT", cls.llm_timeout),
             crossref_mailto=os.environ.get("CROSSREF_MAILTO", "").strip(),
             db_path=Path(os.environ.get("INVESTIGATOR_DB", cls.db_path)),
             offline=os.environ.get("INVESTIGATOR_OFFLINE", "") == "1",

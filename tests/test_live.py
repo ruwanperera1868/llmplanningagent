@@ -10,7 +10,7 @@ import pytest
 
 from evidence_investigator.config import Settings
 from evidence_investigator.investigator import Investigator
-from evidence_investigator.llm import HuggingFaceClient
+from evidence_investigator.investigator import default_llm
 from evidence_investigator.sources import CrossrefSource, SemanticScholarSource
 
 pytestmark = [pytest.mark.live,
@@ -27,9 +27,11 @@ def test_crossref_live():
     assert papers and all(p.doi for p in papers)
 
 
-@pytest.mark.skipif(not os.environ.get("HF_TOKEN"), reason="HF_TOKEN not set")
-def test_hugging_face_live():
-    client = HuggingFaceClient(os.environ["HF_TOKEN"], Settings.from_env().hf_model)
+@pytest.mark.skipif(not (os.environ.get("HF_TOKEN") or os.environ.get("LLM_BASE_URL")),
+                    reason="set HF_TOKEN or LLM_BASE_URL")
+def test_llm_live():
+    # Uses whichever endpoint is configured: Hugging Face, or a local Ollama.
+    client = default_llm(Settings.from_env())
     assert client.complete("Reply with the word OK.", "Say OK", max_tokens=5)
 
 

@@ -38,7 +38,7 @@ The agents share one `ResearchState` (`state.py`) and are wired as a LangGraph `
 |---|---|
 | Supervisor-based architecture with four specialist roles (s.3) | `agents/`, `graph.py` |
 | LangGraph shared state and conditional workflow (s.2, s.3) | `state.py`, `graph.py` |
-| Qwen2.5-7B-Instruct via Hugging Face, model configurable (s.2) | `llm.py`, `HF_MODEL` setting |
+| Qwen2.5-7B-Instruct via Hugging Face, model configurable (s.2) | `llm.py`, `HF_MODEL` and `LLM_BASE_URL` settings |
 | Semantic Scholar and Crossref (s.2) | `sources/semantic_scholar.py`, `sources/crossref.py` |
 | Deterministic deduplication, cleaning and ranking (s.3) | `processing.py` |
 | Critic returns control to the Planner if evidence is weak or unbalanced (s.3, Fig. 2) | `CriticAgent.judge`, `make_router` |
@@ -51,7 +51,7 @@ The agents share one `ResearchState` (`state.py`) and are wired as a LangGraph `
 | SQLite persistence, Flask/HTML interface (s.2) | `storage.py`, `web/` |
 | PyTest, Git/GitHub (s.2) | `tests/`, commit history |
 
-**Deliberate differences from the proposal.** Only `requests` is used for HTTP (HTTPX added nothing for synchronous calls). An explicit **offline mode** was added so that tests and demonstrations do not depend on network access or API limits; it is never used as a silent fallback for a failed live search, because mixing demo data into a real briefing would misrepresent the evidence. Every LLM step has a **deterministic fallback**, so the system still completes when the free tier is rate-limited or no token is set. PostgreSQL remains future work.
+**Deliberate differences from the proposal.** Only `requests` is used for HTTP (HTTPX added nothing for synchronous calls). An explicit **offline mode** was added so that tests and demonstrations do not depend on network access or API limits; it is never used as a silent fallback for a failed live search, because mixing demo data into a real briefing would misrepresent the evidence. The LLM endpoint is **configurable** (Hugging Face by default, or a local Ollama server), because free-tier model availability changed during development. Every LLM step has a **deterministic fallback**, so the system still completes when the free tier is rate-limited or no token is set. PostgreSQL remains future work.
 
 ## 3. Installation
 
@@ -71,8 +71,21 @@ Optional configuration (copy `.env.example` and set the values in your shell or 
 |---|---|
 | `HF_TOKEN` | Hugging Face access token (free account, "Make calls to Inference Providers" permission). Without it the agents use their deterministic fallbacks. |
 | `HF_MODEL` | Defaults to `Qwen/Qwen2.5-7B-Instruct`. |
+| `LLM_BASE_URL` | Any OpenAI-compatible endpoint. Defaults to the Hugging Face router; set `http://localhost:11434/v1` to use Ollama (below). |
+| `LLM_TIMEOUT` | Seconds per LLM call (default 90). A local model on a CPU needs more, e.g. 900. |
 | `CROSSREF_MAILTO` | Your email, which puts requests in Crossref's "polite pool". |
 | `MAX_CYCLES`, `MIN_RELEVANT_PAPERS` | Tune the critic loop. |
+
+**Running the model locally with Ollama (no token, no cost).** Hugging Face's free tier changes: during development Qwen2.5-7B-Instruct stopped being offered on the router and the free credit ran out (remediation R6 in `docs/TESTING.md`). The same model can run on your own machine instead:
+
+```bash
+# install Ollama from https://ollama.com/download, then
+ollama pull qwen2.5:7b
+export LLM_BASE_URL=http://localhost:11434/v1 HF_MODEL=qwen2.5:7b LLM_TIMEOUT=900
+# Windows PowerShell: $env:LLM_BASE_URL="http://localhost:11434/v1"; $env:HF_MODEL="qwen2.5:7b"; $env:LLM_TIMEOUT="900"
+```
+
+The Critic sends up to 12 abstracts at once, so set Ollama's context length to at least 16k (Ollama settings, or `OLLAMA_CONTEXT_LENGTH=16384`).
 
 ## 4. Running
 
@@ -100,8 +113,8 @@ Enter a question, optionally tick *Offline demo mode*, and press **Investigate**
 ## 5. Testing
 
 ```bash
-python -m pytest -v --cov=evidence_investigator      # 76 tests, no network needed
-RUN_LIVE_TESTS=1 python -m pytest tests/test_live.py  # optional: real APIs (and HF if HF_TOKEN is set)
+python -m pytest -v --cov=evidence_investigator      # 79 tests, no network needed
+RUN_LIVE_TESTS=1 python -m pytest tests/test_live.py  # optional: real APIs and the configured LLM
 ```
 
 Unit tests cover each agent, source parser, processing rule, renderer and store. Functional tests run the whole LangGraph workflow with scripted fakes to prove the behaviours the proposal promised: the re-plan loop, the cycle limit, source outages, cross-source deduplication, a full LLM path with a hallucinated citation removed, and graceful degradation when every LLM call fails. Interface tests drive the CLI and the Flask app, including HTML-escaping of hostile text from an API.
@@ -134,7 +147,7 @@ evidence_investigator/
   state.py           LangGraph shared research state
   graph.py           workflow wiring and routing
   processing.py      deduplicate, filter, rank
-  llm.py             Hugging Face client and JSON validation
+  llm.py             OpenAI-compatible LLM client (Hugging Face or Ollama) and JSON validation
   rendering.py       Harvard references and Markdown
   storage.py         SQLite persistence
   investigator.py    composition root
@@ -163,7 +176,7 @@ presentation/        10-slide deck (.pptx and .pdf) and narration transcript
 
 ## 10. Acknowledgements and use of AI
 
-Libraries: LangGraph, Pydantic, pandas, Requests, Flask and Jinja2, pytest and pytest-cov. Model: Qwen2.5-7B-Instruct (Qwen Team, 2024) through Hugging Face Inference Providers. Data: Semantic Scholar Graph API (Kinney et al., 2023) and the Crossref REST API. The offline corpus cites the papers listed in `evidence_investigator/data/offline_corpus.json`.
+Libraries: LangGraph, Pydantic, pandas, Requests, Flask and Jinja2, pytest and pytest-cov. Model: Qwen2.5-7B-Instruct (Qwen Team, 2024) through Hugging Face Inference Providers or run locally with Ollama. Data: Semantic Scholar Graph API (Kinney et al., 2023) and the Crossref REST API. The offline corpus cites the papers listed in `evidence_investigator/data/offline_corpus.json`.
 
 Generative AI (Claude, Anthropic) was used to assist with code and documentation, under the module's guidance on AI use. All design decisions follow the Unit 6 proposal, and the author reviewed, tested and is responsible for the submitted work.
 
