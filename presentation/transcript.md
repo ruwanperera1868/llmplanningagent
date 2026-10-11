@@ -2,7 +2,7 @@
 
 Academic Evidence Investigator: Unit 11 individual presentation, Ruwan Perera
 
-About 1285 words, roughly 9 minutes at a natural speaking pace.
+About 1300 words, roughly 9 minutes at a natural speaking pace.
 
 ## Slide 1: Academic Evidence Investigator
 
@@ -18,11 +18,11 @@ This is the architecture from the proposal, implemented as a LangGraph state gra
 
 ## Slide 4: The LLM proposes, Python verifies
 
-The guiding principle, taken from the proposal, is that the LLM only does work that needs language understanding. Qwen2.5-7B-Instruct proposes a plan, appraises abstracts and drafts the briefing. For the live demonstration it ran locally under Ollama, through the same OpenAI-style interface the code uses for Hugging Face. Python handles everything with one correct answer: deduplication by DOI and then by title and first author, ranking, rate limiting, and retries. Every LLM output crosses a Pydantic schema before anything else uses it. The Critic sends all new papers to the model in one batched call, and only new papers, which keeps token cost in line with new evidence.
+The guiding principle, taken from the proposal, is that the LLM only does work that needs language understanding. Qwen2.5-7B-Instruct, running locally under Ollama for the live demonstration, proposes a plan, appraises abstracts and drafts the briefing. Python handles everything with one correct answer: deduplication, ranking, rate limiting and retries, and every LLM output crosses a Pydantic schema first. Four decisions along the bottom are where most of the critical thinking sits. Whether to search again is decided by thresholds, not by asking the model, because self-reflection reduces but does not remove hallucination (Ji et al., 2023). Retrieval-augmented generation helps (Lewis et al., 2020) but can still fail (Huang et al., 2025), so citations to papers that were never retrieved are stripped. Every LLM step has a deterministic fallback, so a rate limit lowers quality but never stops the run. And offline mode is explicit, never a silent fallback, because mixing demo data into a live briefing would misrepresent the evidence.
 
-## Slide 5: Four decisions that make it trustworthy
+## Slide 5: Code and executables
 
-These four decisions are where most of the critical thinking in the code sits. First, the decision to stop or keep searching is made by explicit thresholds, not by asking the model whether it is satisfied. Self-reflection reduces hallucination but does not remove it (Ji et al., 2023), and a rule can be tested and explained. Second, reporting is grounded: retrieval-augmented generation helps (Lewis et al., 2020), but it can still fail (Huang et al., 2025), so any citation to a paper that was never retrieved is stripped. Third, every LLM step has a deterministic fallback, so a free-tier rate limit lowers quality but never stops the run, and the audit trail records which path was used. Fourth, offline mode is explicit and never a silent fallback, because mixing demo data into a live briefing would misrepresent the evidence.
+Here is how the code is organised and how it is run. graph.py wires the agents together, state.py holds the shared research state, each agent has its own module, and the sources, the LLM client, processing and storage are kept separate, so each can be tested on its own. There are three ways to run it. The command line takes a question and prints the briefing with the audit trail of every agent step. The web interface offers the same run in a browser, with the run history. And the test suite runs 83 tests, all passing, with 96 percent coverage. Live mode uses Qwen running locally under Ollama; offline mode runs the same code on a bundled corpus. The README gives the full setup.
 
 ## Slide 6: Demonstration: from question to briefing
 
@@ -36,9 +36,9 @@ This is the code that makes the system an agent rather than a fixed pipeline. Af
 
 The test suite has 83 automated tests, all passing, with 96 percent line coverage, and it needs no network or API key. That is possible because the sources and the LLM are injected through small interfaces, so tests use scripted fakes and synthetic API responses. Sixty-seven unit tests cover each agent, parser and rule. Eleven functional tests run the real graph end to end and prove the behaviours the proposal promised, listed on the right: the re-plan, the cycle limit, an outage, deduplication, an invented citation being removed, and a complete LLM outage still producing a briefing. Interface tests drive the command line and the web app, including escaping a malicious paper title. Four live tests call the real services and the model when enabled.
 
-## Slide 9: What testing found, and what changed
+## Slide 9: How it developed: build, test, refine, run live
 
-Testing changed the code. Offline, the first smoke run showed that "LLM-based" never matched abstracts that say "large language models", so the agent wasted all three cycles; synonym folding and light stemming took it from two papers in three cycles to ten in one. Other tests caught all-neutral evidence being called biased, leaked database connections, a 404 being retried like a rate limit, and references in the wrong order. Running live on Windows found four more problems. The hosted Qwen model was no longer served and the free credit ran out, so I made the endpoint configurable and ran Qwen locally. Semantic Scholar throttled requests, so retries now back off longer. One malformed appraisal discarded all twelve, so each is now validated separately, and eleven of twelve were then kept. And the model once wrote invalid JSON, so an optional JSON mode now constrains its output. In every case the fallbacks kept the run going and the audit trail showed what happened. Each fix has a regression test, and the full log is in docs/TESTING.md.
+This slide shows how the system developed over the module. It started from our Unit 6 group design. I then built it offline-first in incremental commits: the schemas and shared state, the sources and LLM client, the agents in a LangGraph graph, the Flask interface, and the tests. Testing drove five refinements. For example, "LLM-based" never matched "large language models", and synonym folding took the same question from two relevant papers to ten. Running live on Windows found four more. The hosted Qwen model was withdrawn, so I made the endpoint configurable and ran Qwen locally. Semantic Scholar throttled requests, so retries back off longer. One bad appraisal discarded all twelve, so each is now validated on its own. And the model once wrote invalid JSON, so JSON mode now constrains its output. The suite grew from 76 to 83 tests, and every step is a commit or pull request on GitHub.
 
 ## Slide 10: Responsible use, limits and next steps
 

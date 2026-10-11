@@ -58,8 +58,8 @@ The agents share one `ResearchState` (`state.py`) and are wired as a LangGraph `
 Requires Python 3.11 or later.
 
 ```bash
-git clone <this repository>
-cd evidence-investigator
+git clone https://github.com/ruwanperera1868/llmplanningagent.git
+cd llmplanningagent
 python -m venv .venv
 source .venv/bin/activate        # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
