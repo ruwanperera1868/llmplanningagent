@@ -25,7 +25,7 @@ RUN_LIVE_TESTS=1 python -m pytest tests/test_live.py -v
 
 ## Results
 
-Final run (`evidence/test-report.txt`): **82 passed, 4 skipped (live), 0 failed; 97% line coverage.**
+Final run (`evidence/test-report.txt`): **82 passed, 4 skipped (live), 0 failed; 96% line coverage.**
 
 | File | Tests |
 |---|---|

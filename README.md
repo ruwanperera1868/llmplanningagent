@@ -120,7 +120,7 @@ RUN_LIVE_TESTS=1 python -m pytest tests/test_live.py  # optional: real APIs and 
 
 Unit tests cover each agent, source parser, processing rule, renderer and store. Functional tests run the whole LangGraph workflow with scripted fakes to prove the behaviours the proposal promised: the re-plan loop, the cycle limit, source outages, cross-source deduplication, a full LLM path with a hallucinated citation removed, and graceful degradation when every LLM call fails. Interface tests drive the CLI and the Flask app, including HTML-escaping of hostile text from an API.
 
-The test strategy, results (97% line coverage) and the **remediation log** of the issues testing found and how they were fixed are in [`docs/TESTING.md`](docs/TESTING.md).
+The test strategy, results (96% line coverage) and the **remediation log** of the issues testing found and how they were fixed are in [`docs/TESTING.md`](docs/TESTING.md).
 
 ## 6. Evidence of execution
 
