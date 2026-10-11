@@ -1,7 +1,10 @@
 import pytest
 import requests
 
-from evidence_investigator.llm import HuggingFaceClient, LLMError, extract_json, structured_call
+from evidence_investigator.config import Settings
+from evidence_investigator.investigator import default_llm
+from evidence_investigator.llm import (ChatCompletionsClient, HuggingFaceClient, LLMError, extract_json,
+                                      structured_call)
 from evidence_investigator.schemas import SearchPlan
 
 
@@ -77,3 +80,30 @@ def test_hf_client_errors_become_llm_error_without_leaking_token():
 def test_hf_client_requires_token():
     with pytest.raises(LLMError):
         HuggingFaceClient("", "m")
+
+
+def test_local_endpoint_needs_no_token_and_sends_no_auth_header():
+    # Remediation R6: the same client must reach a keyless local server (Ollama).
+    session = FakeSession(FakeResponse(payload={"choices": [{"message": {"content": "ok"}}]}))
+    client = ChatCompletionsClient("", "qwen2.5:7b", "http://localhost:11434/v1/", session=session)
+    assert client.complete("s", "p") == "ok"
+    url, headers, _ = session.sent
+    assert url == "http://localhost:11434/v1/chat/completions" and headers == {}
+    assert client.name == "localhost:qwen2.5:7b"
+
+
+def test_provider_error_message_is_kept():
+    # The first live run logged only "400 Bad Request"; the cause was in the body.
+    response = FakeResponse(status=400)
+    response.text = '{"error": {"message": "model not supported by any provider"}}'
+    client = HuggingFaceClient("secret-token", "m", session=FakeSession(response))
+    with pytest.raises(LLMError, match="HTTP 400.*model not supported") as info:
+        client.complete("s", "p")
+    assert "secret-token" not in str(info.value)
+
+
+def test_default_llm_uses_configured_endpoint():
+    assert default_llm(Settings()) is None                       # no token, hosted router
+    local = default_llm(Settings(llm_base_url="http://localhost:11434/v1", hf_model="qwen2.5:7b"))
+    assert local.url == "http://localhost:11434/v1/chat/completions"
+    assert default_llm(Settings(hf_token="t", offline=True)) is None

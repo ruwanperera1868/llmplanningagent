@@ -7,6 +7,8 @@ Critic needs to appraise findings and methods.
 
 from __future__ import annotations
 
+from functools import partial
+
 from ..schemas import Paper
 from .base import Fetcher, RateLimiter, SourceError, http_json
 
@@ -41,8 +43,12 @@ def parse(data: dict) -> list[Paper]:
 class SemanticScholarSource:
     name = "semantic_scholar"
 
-    def __init__(self, fetch: Fetcher = http_json, limiter: RateLimiter | None = None):
-        self._fetch = fetch
+    def __init__(self, fetch: Fetcher = http_json, limiter: RateLimiter | None = None,
+                 api_key: str = ""):
+        # A free API key moves requests out of the shared, often-throttled
+        # unauthenticated pool (remediation R7). It is optional so the system
+        # still runs for anyone without one.
+        self._fetch = partial(fetch, headers={"x-api-key": api_key}) if api_key else fetch
         self._limiter = limiter or RateLimiter(1.1)
 
     def search(self, query: str, limit: int) -> list[Paper]:

@@ -13,7 +13,7 @@ from dataclasses import dataclass
 from .agents import CriticAgent, PlannerAgent, ReportingAgent, RetrievalAgent
 from .config import Settings
 from .graph import build_graph
-from .llm import HuggingFaceClient, LLMClient
+from .llm import HF_BASE_URL, ChatCompletionsClient, LLMClient
 from .rendering import render_markdown
 from .schemas import Appraisal, AuditEvent, Briefing, CriticVerdict, Paper
 from .sources import CrossrefSource, OfflineSource, SearchSource, SemanticScholarSource
@@ -48,16 +48,21 @@ def validate_question(question: str) -> str:
 def default_sources(settings: Settings) -> list[SearchSource]:
     if settings.offline:
         return [OfflineSource()]
-    available = {"semantic_scholar": lambda: SemanticScholarSource(),
+    available = {"semantic_scholar": lambda: SemanticScholarSource(api_key=settings.semantic_scholar_api_key),
                  "crossref": lambda: CrossrefSource(mailto=settings.crossref_mailto)}
     return [available[name]() for name in settings.sources if name in available]
 
 
 def default_llm(settings: Settings) -> LLMClient | None:
     # Offline mode is fully deterministic: no LLM, so results are reproducible.
-    if settings.offline or not settings.hf_token:
+    if settings.offline:
         return None
-    return HuggingFaceClient(settings.hf_token, settings.hf_model)
+    # Without a token the hosted router cannot be used, so fall back to the
+    # deterministic agents; a local endpoint (Ollama) needs no token.
+    if not settings.hf_token and settings.llm_base_url.rstrip("/") == HF_BASE_URL:
+        return None
+    return ChatCompletionsClient(settings.hf_token, settings.hf_model,
+                                 settings.llm_base_url, settings.llm_timeout)
 
 
 class Investigator:
