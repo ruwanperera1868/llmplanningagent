@@ -114,7 +114,7 @@ Enter a question, optionally tick *Offline demo mode*, and press **Investigate**
 ## 5. Testing
 
 ```bash
-python -m pytest -v --cov=evidence_investigator      # 81 tests, no network needed
+python -m pytest -v --cov=evidence_investigator      # 82 tests, no network needed
 RUN_LIVE_TESTS=1 python -m pytest tests/test_live.py  # optional: real APIs and the configured LLM
 ```
 
