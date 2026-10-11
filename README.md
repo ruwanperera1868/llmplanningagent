@@ -38,7 +38,7 @@ The agents share one `ResearchState` (`state.py`) and are wired as a LangGraph `
 |---|---|
 | Supervisor-based architecture with four specialist roles (s.3) | `agents/`, `graph.py` |
 | LangGraph shared state and conditional workflow (s.2, s.3) | `state.py`, `graph.py` |
-| Qwen2.5-7B-Instruct via Hugging Face, model configurable (s.2) | `llm.py`, `HF_MODEL` and `LLM_BASE_URL` settings |
+| Qwen2.5-7B-Instruct via Hugging Face or run locally with Ollama, model configurable (s.2) | `llm.py`, `HF_MODEL` and `LLM_BASE_URL` settings |
 | Semantic Scholar and Crossref (s.2) | `sources/semantic_scholar.py`, `sources/crossref.py` |
 | Deterministic deduplication, cleaning and ranking (s.3) | `processing.py` |
 | Critic returns control to the Planner if evidence is weak or unbalanced (s.3, Fig. 2) | `CriticAgent.judge`, `make_router` |
@@ -178,7 +178,7 @@ presentation/        10-slide deck (.pptx and .pdf) and narration transcript
 
 - The heuristic appraisal is a keyword lexicon; with the LLM unavailable, design and stance labels are approximate.
 - Relevance uses term overlap with light stemming, not semantic embeddings.
-- The web request is synchronous: a live run blocks the page for a minute or more. A task queue would be needed for multiple users.
+- The web request is synchronous: a live run blocks the page for a minute or more, or 5 to 10 minutes with a local model on a CPU. A task queue would be needed for multiple users.
 - Only abstracts are analysed, not full text.
 - Next steps: embedding-based relevance, PostgreSQL, Crossref enrichment of Semantic Scholar records that lack DOIs, and evaluation against a hand-labelled set of appraisals.
 
